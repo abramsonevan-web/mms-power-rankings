@@ -1,0 +1,37 @@
+name: Weekly Power Rankings Update
+
+on:
+  schedule:
+    # Every Monday at 9:00 AM Eastern (13:00 UTC) — after Sunday games wrap
+    - cron: '0 13 * * 1'
+  workflow_dispatch:   # Allow manual trigger from the Actions tab
+
+jobs:
+  update-rankings:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Needed to commit rankings.json back to the repo
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Scrape site and compute rankings
+        run: python scraper.py --out rankings.json
+
+      - name: Commit updated rankings
+        run: |
+          git config user.name  "mms-rankings-bot"
+          git config user.email "bot@marlborosoftball.com"
+          git add rankings.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Weekly rankings update: $(date -u +'%Y-%m-%d')"
+            git push
+          fi
