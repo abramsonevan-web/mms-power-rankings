@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MMS POWER INDEX — Marlboro Men's Softball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4efe6;
+    --ink: #111111;
+    --ink-soft: #3a3a3a;
+    --rule: #1a1a1a;
+    --paper: #faf6ed;
+    --accent: #c8102e;        /* classic scoreboard red */
+    --accent-dark: #8a0b1f;
+    --positive: #2d5a3d;
+    --negative: #c8102e;
+    --grid: rgba(17,17,17,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Newsreader', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    background-image:
+      repeating-linear-gradient(0deg,
+        transparent 0, transparent 39px,
+        rgba(17,17,17,0.025) 39px, rgba(17,17,17,0.025) 40px),
+      radial-gradient(ellipse at 20% 10%, rgba(200,16,46,0.04), transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(17,17,17,0.04), transparent 50%);
+    background-attachment: fixed;
+  }
+
+  /* -------- Masthead -------- */
+  .masthead {
+    border-bottom: 6px double var(--ink);
+    padding: 24px 5vw 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .masthead::before {
+    content: '';
+    position: absolute;
+    top: 8px; left: 5vw; right: 5vw;
+    height: 1px; background: var(--ink);
+  }
+  .masthead-top {
+    display: flex; justify-content: space-between;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .masthead h1 {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: clamp(44px, 9vw, 110px);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+  .masthead h1 .accent { color: var(--accent); font-style: italic; }
+  .masthead .tagline {
+    font-style: italic;
+    font-size: clamp(15px, 1.6vw, 19px);
+    color: var(--ink-soft);
+    margin-top: 8px;
+    max-width: 780px;
+    line-height: 1.4;
+  }
+  .masthead .week-badge {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 4px 14px;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 16px;
+  }
+
+  /* -------- Layout -------- */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 5vw 80px;
+    display: grid;
+    grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr);
+    gap: 48px;
+  }
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; gap: 32px; }
+  }
+
+  /* -------- Rankings Table -------- */
+  .rankings-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: 8px; margin-bottom: 8px;
+  }
+  .rankings-header h2 {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .rankings-header .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+  }
+
+  .col-headers {
+    display: grid;
+    grid-template-columns: 48px 1fr 70px 70px 90px 90px;
+    gap: 12px;
+    padding: 10px 4px 8px;
+    border-bottom: 1px solid var(--rule);
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .col-headers .num { text-align: right; }
+
+  .ranking-row {
+    display: grid;
+    grid-template-columns: 48px 1fr 70px 70px 90px 90px;
+    gap: 12px;
+    align-items: center;
+    padding: 16px 4px;
+    border-bottom: 1px solid var(--grid);
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .ranking-row:hover { background: rgba(17,17,17,0.03); }
+  .ranking-row.expanded {
+    background: var(--paper);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .ranking-row .rank {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 34px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .ranking-row.top3 .rank { color: var(--accent); }
+
+  .team-block {
+    display: flex; flex-direction: column; gap: 2px; min-width: 0;
+  }
+  .team-name {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .team-meta {
+    font-size: 12px; color: var(--ink-soft);
+    display: flex; gap: 8px; align-items: center;
+  }
+  .division-chip {
+    display: inline-block;
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 2px 6px;
+    border: 1px solid var(--ink-soft);
+  }
+
+  .stat {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat.big {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+  }
+  .stat.positive { color: var(--positive); }
+  .stat.negative { color: var(--negative); }
+
+  .delta {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 3px 6px;
+    margin-left: 6px;
+  }
+  .delta.up   { background: var(--positive); color: white; }
+  .delta.down { background: var(--accent);   color: white; }
+  .delta.flat { color: var(--ink-soft); }
+
+  /* -------- Expanded detail panel -------- */
+  .detail {
+    display: none;
+    padding: 20px 4px 28px 60px;
+    border-bottom: 1px solid var(--grid);
+    background: var(--paper);
+  }
+  .ranking-row.expanded + .detail { display: grid; }
+  .detail {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  @media (max-width: 700px) {
+    .detail { grid-template-columns: 1fr; padding-left: 16px; }
+  }
+  .detail h4 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--grid);
+    padding-bottom: 4px;
+  }
+  .component-bar {
+    display: grid;
+    grid-template-columns: 120px 1fr 60px;
+    gap: 10px;
+    align-items: center;
+    font-size: 13px;
+    margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .bar-track {
+    height: 8px;
+    background: rgba(17,17,17,0.08);
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--ink);
+    transition: width 0.5s ease;
+  }
+  .component-bar .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .component-bar .value {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .detail .narrative {
+    font-family: 'Newsreader', serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
+    font-style: italic;
+  }
+  .detail .narrative strong {
+    font-style: normal;
+    background: linear-gradient(transparent 65%, rgba(200,16,46,0.25) 65%);
+  }
+
+  /* -------- Sidebar -------- */
+  .sidebar { display: flex; flex-direction: column; gap: 32px; }
+  .sidebar-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 22px;
+    position: relative;
+  }
+  .sidebar-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: var(--accent);
+  }
+  .sidebar-card h3 {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .sidebar-item {
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--grid);
+  }
+  .sidebar-item:last-child { border-bottom: none; }
+  .sidebar-item .team {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+  }
+  .sidebar-item .desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .sidebar-item .jump {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-top: 6px;
+  }
+
+  /* -------- Methodology -------- */
+  .methodology {
+    margin-top: 40px;
+    padding: 24px;
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .methodology h3 {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .methodology p {
+    font-size: 13px; line-height: 1.6;
+    max-width: 640px;
+  }
+  .methodology .formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.06);
+    border-left: 3px solid var(--accent);
+  }
+
+  /* -------- Footer -------- */
+  footer {
+    max-width: 1400px; margin: 0 auto;
+    padding: 28px 5vw;
+    border-top: 3px double var(--ink);
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* -------- Entrance animation -------- */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .ranking-row { animation: slideIn 0.35s ease backwards; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-top">
+    <span>MARLBORO MEN'S SOFTBALL · EST. 1970</span>
+    <span id="dateline">LOADING…</span>
+  </div>
+  <h1>The MMS<br><span class="accent">Power Index</span></h1>
+  <p class="tagline">A weekly 1-18 league ranking that accounts for wins, losses, run differential, and — most importantly — who you've actually played. Your record is only half the story.</p>
+  <div class="week-badge" id="week-badge">WEEK 0</div>
+</header>
+
+<main class="container">
+
+  <section class="rankings">
+    <div class="rankings-header">
+      <h2>The Rankings</h2>
+      <div class="meta">Click any team for detail · Updated weekly</div>
+    </div>
+
+    <div class="col-headers">
+      <span>#</span>
+      <span>Team</span>
+      <span class="num">REC</span>
+      <span class="num">DIFF</span>
+      <span class="num">RATING</span>
+      <span class="num">VS RECORD</span>
+    </div>
+
+    <div id="rankings-list"></div>
+
+    <div class="methodology">
+      <h3>How the Index works</h3>
+      <p>The Power Index blends three components into a single 0-100 rating. Each week we recompute from fresh data scraped from the league standings page.</p>
+      <div class="formula">
+        RATING = 40% × ADJUSTED WIN %  +  35% × AVG RUN DIFF  +  25% × ITERATIVE OPP-ADJ RATING
+      </div>
+      <p style="margin-top:12px;">Adjusted Win % combines your record with your opponents' records (RPI-style). Iterative Rating runs 25 passes over every game, solving for each team's true strength by factoring in the strength of who they beat or lost to — so a close loss to a great team counts more than a blowout of a bad one. In weeks 1-3, run differential is weighted heavier since SOS hasn't stabilized yet.</p>
+    </div>
+  </section>
+
+  <aside class="sidebar">
+    <div class="sidebar-card">
+      <h3>Most Underrated</h3>
+      <div id="underrated-list"></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Most Overrated</h3>
+      <div id="overrated-list"></div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Strength of Schedule</h3>
+      <div id="sos-list"></div>
+    </div>
+  </aside>
+
+</main>
+
+<footer>
+  <span>© 2026 Marlboro Men's Softball League · Power Index is an independent analytical tool</span>
+  <span>Data source: <a href="https://marlborosoftball.com/standings/" target="_blank">marlborosoftball.com</a></span>
+</footer>
+
+<!-- Embedded demo data — replaced by live fetch when rankings.json is present -->
+<script id="embedded-data" type="application/json">{
+  "generated_at": "2026-04-23T14:48:26.942689+00:00",
+  "source": "demo",
+  "week": 9,
+  "rankings": [
+    {
+      "rank": 1,
+      "team_id": 1,
+      "name": "ENGAGE PEO",
+      "captain": "POLLOCK",
+      "division": "East",
+      "wins": 5,
+      "losses": 0,
+      "win_pct": 1.0,
+      "runs_for": 81,
+      "runs_against": 46,
+      "run_diff": 35,
+      "avg_diff": 7.0,
+      "rating": 85.8,
+      "components": {
+        "adj_win_pct": 0.7,
+        "avg_run_diff": 7.0,
+        "iter_rating": 7.573,
+        "opp_win_pct": 0.4
+      },
+      "week": 9,
+      "record_rank": 3,
+      "rank_delta": 2
+    },
+    {
+      "rank": 2,
+      "team_id": 17,
+      "name": "EB CONSTRUCTION",
+      "captain": "GOLDFARB",
+      "division": "West",
+      "wins": 6,
+      "losses": 0,
+      "win_pct": 1.0,
+      "runs_for": 89,
+      "runs_against": 53,
+      "run_diff": 36,
+      "avg_diff": 6.0,
+      "rating": 80.5,
+      "components": {
+        "adj_win_pct": 0.675,
+        "avg_run_diff": 6.0,
+        "iter_rating": 6.107,
+        "opp_win_pct": 0.35
+      },
+      "week": 9,
+      "record_rank": 2,
+      "rank_delta": 0
+    },
+    {
+      "rank": 3,
+      "team_id": 9,
+      "name": "ACE ALUMINUM",
+      "captain": "ROSENSTOCK",
+      "division": "Central",
+      "wins": 5,
+      "losses": 1,
+      "win_pct": 0.833,
+      "runs_for": 91,
+      "runs_against": 43,
+      "run_diff": 48,
+      "avg_diff": 8.0,
+      "rating": 78.2,
+      "components": {
+        "adj_win_pct": 0.5917,
+        "avg_run_diff": 8.0,
+        "iter_rating": 3.819,
+        "opp_win_pct": 0.35
+      },
+      "week": 9,
+      "record_rank": 4,
+      "rank_delta": 1
+    },
+    {
+      "rank": 4,
+      "team_id": 7,
+      "name": "FRADKIN LAW",
+      "captain": "PINGARO",
+      "division": "Central",
+      "wins": 6,
+      "losses": 0,
+      "win_pct": 1.0,
+      "runs_for": 87,
+      "runs_against": 49,
+      "run_diff": 38,
+      "avg_diff": 6.33,
+      "rating": 75.2,
+      "components": {
+        "adj_win_pct": 0.6611,
+        "avg_run_diff": 6.333,
+        "iter_rating": 2.391,
+        "opp_win_pct": 0.3222
+      },
+      "week": 9,
+      "record_rank": 1,
+      "rank_delta": -3
+    },
+    {
+      "rank": 5,
+      "team_id": 2,
+      "name": "FREEHOLD BUICK GMC",
+      "captain": "CONTI",
+      "division": "East",
+      "wins": 4,
+      "losses": 1,
+      "win_pct": 0.8,
+      "runs_for": 64,
+      "runs_against": 49,
+      "run_diff": 15,
+      "avg_diff": 3.0,
+      "rating": 69.0,
+      "components": {
+        "adj_win_pct": 0.62,
+        "avg_run_diff": 3.0,
+        "iter_rating": 4.239,
+        "opp_win_pct": 0.44
+      },
+      "week": 9,
+      "record_rank": 5,
+      "rank_delta": 0
+    },
+    {
+      "rank": 6,
+      "team_id": 13,
+      "name": "MONMOUTH GYMNASTICS",
+      "captain": "MARRONE",
+      "division": "West",
+      "wins": 3,
+      "losses": 1,
+      "win_pct": 0.75,
+      "runs_for": 51,
+      "runs_against": 41,
+      "run_diff": 10,
+      "avg_diff": 2.5,
+      "rating": 68.0,
+      "components": {
+        "adj_win_pct": 0.6375,
+        "avg_run_diff": 2.5,
+        "iter_rating": 3.877,
+        "opp_win_pct": 0.525
+      },
+      "week": 9,
+      "record_rank": 6,
+      "rank_delta": 0
+    },
+    {
+      "rank": 7,
+      "team_id": 3,
+      "name": "PRINCETON BRAIN & SPINE",
+      "captain": "WALLMAN",
+      "division": "East",
+      "wins": 3,
+      "losses": 2,
+      "win_pct": 0.6,
+      "runs_for": 62,
+      "runs_against": 58,
+      "run_diff": 4,
+      "avg_diff": 0.8,
+      "rating": 58.3,
+      "components": {
+        "adj_win_pct": 0.54,
+        "avg_run_diff": 0.8,
+        "iter_rating": 2.406,
+        "opp_win_pct": 0.48
+      },
+      "week": 9,
+      "record_rank": 7,
+      "rank_delta": 0
+    },
+    {
+      "rank": 8,
+      "team_id": 14,
+      "name": "NEW HORIZON",
+      "captain": "MEYER",
+      "division": "West",
+      "wins": 2,
+      "losses": 2,
+      "win_pct": 0.5,
+      "runs_for": 42,
+      "runs_against": 45,
+      "run_diff": -3,
+      "avg_diff": -0.75,
+      "rating": 53.4,
+      "components": {
+        "adj_win_pct": 0.5437,
+        "avg_run_diff": -0.75,
+        "iter_rating": 1.277,
+        "opp_win_pct": 0.5875
+      },
+      "week": 9,
+      "record_rank": 8,
+      "rank_delta": 0
+    },
+    {
+      "rank": 9,
+      "team_id": 15,
+      "name": "TEC-TEL",
+      "captain": "DRASHINSKY",
+      "division": "West",
+      "wins": 2,
+      "losses": 3,
+      "win_pct": 0.4,
+      "runs_for": 57,
+      "runs_against": 59,
+      "run_diff": -2,
+      "avg_diff": -0.4,
+      "rating": 50.4,
+      "components": {
+        "adj_win_pct": 0.47,
+        "avg_run_diff": -0.4,
+        "iter_rating": 0.715,
+        "opp_win_pct": 0.54
+      },
+      "week": 9,
+      "record_rank": 10,
+      "rank_delta": 1
+    },
+    {
+      "rank": 10,
+      "team_id": 8,
+      "name": "JERSEY ALLSTARS",
+      "captain": "BOMENBLIT",
+      "division": "Central",
+      "wins": 2,
+      "losses": 2,
+      "win_pct": 0.5,
+      "runs_for": 41,
+      "runs_against": 46,
+      "run_diff": -5,
+      "avg_diff": -1.25,
+      "rating": 45.7,
+      "components": {
+        "adj_win_pct": 0.5542,
+        "avg_run_diff": -1.25,
+        "iter_rating": -3.464,
+        "opp_win_pct": 0.6083
+      },
+      "week": 9,
+      "record_rank": 9,
+      "rank_delta": -1
+    },
+    {
+      "rank": 11,
+      "team_id": 5,
+      "name": "GODDARD'S HOME IMPROVEMENTS",
+      "captain": "GODDARD",
+      "division": "East",
+      "wins": 2,
+      "losses": 3,
+      "win_pct": 0.4,
+      "runs_for": 48,
+      "runs_against": 62,
+      "run_diff": -14,
+      "avg_diff": -2.8,
+      "rating": 42.8,
+      "components": {
+        "adj_win_pct": 0.46,
+        "avg_run_diff": -2.8,
+        "iter_rating": -0.594,
+        "opp_win_pct": 0.52
+      },
+      "week": 9,
+      "record_rank": 11,
+      "rank_delta": 0
+    },
+    {
+      "rank": 12,
+      "team_id": 4,
+      "name": "URWAY HEALTH",
+      "captain": "BYKOFSKY",
+      "division": "East",
+      "wins": 0,
+      "losses": 9,
+      "win_pct": 0.0,
+      "runs_for": 86,
+      "runs_against": 101,
+      "run_diff": -15,
+      "avg_diff": -1.67,
+      "rating": 41.9,
+      "components": {
+        "adj_win_pct": 0.338,
+        "avg_run_diff": -1.667,
+        "iter_rating": 0.47,
+        "opp_win_pct": 0.6759
+      },
+      "week": 9,
+      "record_rank": 17,
+      "rank_delta": 5
+    },
+    {
+      "rank": 13,
+      "team_id": 16,
+      "name": "TUSCANYROSE",
+      "captain": "POLZER",
+      "division": "West",
+      "wins": 1,
+      "losses": 4,
+      "win_pct": 0.2,
+      "runs_for": 47,
+      "runs_against": 68,
+      "run_diff": -21,
+      "avg_diff": -4.2,
+      "rating": 34.2,
+      "components": {
+        "adj_win_pct": 0.39,
+        "avg_run_diff": -4.2,
+        "iter_rating": -2.452,
+        "opp_win_pct": 0.58
+      },
+      "week": 9,
+      "record_rank": 14,
+      "rank_delta": 1
+    },
+    {
+      "rank": 14,
+      "team_id": 18,
+      "name": "CG TAX, AUDIT AND ADVISORY",
+      "captain": "TURANO",
+      "division": "West",
+      "wins": 1,
+      "losses": 3,
+      "win_pct": 0.25,
+      "runs_for": 31,
+      "runs_against": 48,
+      "run_diff": -17,
+      "avg_diff": -4.25,
+      "rating": 30.6,
+      "components": {
+        "adj_win_pct": 0.325,
+        "avg_run_diff": -4.25,
+        "iter_rating": -3.067,
+        "opp_win_pct": 0.4
+      },
+      "week": 9,
+      "record_rank": 13,
+      "rank_delta": -1
+    },
+    {
+      "rank": 15,
+      "team_id": 10,
+      "name": "GAME CHANGER",
+      "captain": "KESSLER",
+      "division": "Central",
+      "wins": 2,
+      "losses": 3,
+      "win_pct": 0.4,
+      "runs_for": 42,
+      "runs_against": 66,
+      "run_diff": -24,
+      "avg_diff": -4.8,
+      "rating": 27.8,
+      "components": {
+        "adj_win_pct": 0.4533,
+        "avg_run_diff": -4.8,
+        "iter_rating": -7.623,
+        "opp_win_pct": 0.5067
+      },
+      "week": 9,
+      "record_rank": 12,
+      "rank_delta": -3
+    },
+    {
+      "rank": 16,
+      "team_id": 6,
+      "name": "PROCARE REHAB",
+      "captain": "CARROLL",
+      "division": "East",
+      "wins": 1,
+      "losses": 4,
+      "win_pct": 0.2,
+      "runs_for": 42,
+      "runs_against": 74,
+      "run_diff": -32,
+      "avg_diff": -6.4,
+      "rating": 27.3,
+      "components": {
+        "adj_win_pct": 0.38,
+        "avg_run_diff": -6.4,
+        "iter_rating": -3.594,
+        "opp_win_pct": 0.56
+      },
+      "week": 9,
+      "record_rank": 16,
+      "rank_delta": 0
+    },
+    {
+      "rank": 17,
+      "team_id": 11,
+      "name": "SHORE SMILE",
+      "captain": "LOMBARDI",
+      "division": "Central",
+      "wins": 1,
+      "losses": 4,
+      "win_pct": 0.2,
+      "runs_for": 44,
+      "runs_against": 68,
+      "run_diff": -24,
+      "avg_diff": -4.8,
+      "rating": 24.6,
+      "components": {
+        "adj_win_pct": 0.3733,
+        "avg_run_diff": -4.8,
+        "iter_rating": -7.623,
+        "opp_win_pct": 0.5467
+      },
+      "week": 9,
+      "record_rank": 15,
+      "rank_delta": -2
+    },
+    {
+      "rank": 18,
+      "team_id": 12,
+      "name": "LHRGC LAW",
+      "captain": "LAROCCA",
+      "division": "Central",
+      "wins": 0,
+      "losses": 4,
+      "win_pct": 0.0,
+      "runs_for": 27,
+      "runs_against": 56,
+      "run_diff": -29,
+      "avg_diff": -7.25,
+      "rating": 13.8,
+      "components": {
+        "adj_win_pct": 0.3042,
+        "avg_run_diff": -7.25,
+        "iter_rating": -9.464,
+        "opp_win_pct": 0.6083
+      },
+      "week": 9,
+      "record_rank": 18,
+      "rank_delta": 0
+    }
+  ]
+}</script>
+
+<script>
+(function() {
+  'use strict';
+
+  // ----- Data loading: try live rankings.json, fall back to embedded -----
+  async function loadData() {
+    try {
+      const res = await fetch('rankings.json', { cache: 'no-store' });
+      if (res.ok) return await res.json();
+    } catch (_) { /* fall through */ }
+    const embedded = document.getElementById('embedded-data').textContent;
+    return JSON.parse(embedded);
+  }
+
+  // ----- Narrative generator -----
+  function narrative(row, allRows) {
+    const opps = row.components.opp_win_pct;
+    const adjWin = row.components.adj_win_pct;
+    const diff = row.avg_diff;
+    const gp = row.wins + row.losses;
+
+    // Hardest / weakest schedule check
+    const sosRank = [...allRows]
+      .sort((a,b) => b.components.opp_win_pct - a.components.opp_win_pct)
+      .findIndex(r => r.team_id === row.team_id) + 1;
+
+    const parts = [];
+    if (row.rank_delta >= 3) {
+      parts.push(`At <strong>${row.wins}-${row.losses}</strong>, the record looks rough — but this team has played the <strong>#${sosRank} toughest schedule</strong> in the league (opponents winning ${(opps*100).toFixed(0)}% of their other games).`);
+    } else if (row.rank_delta <= -2) {
+      parts.push(`Don't let the <strong>${row.wins}-${row.losses}</strong> record fool you. Opponents have won only <strong>${(opps*100).toFixed(0)}%</strong> of their other games — the schedule has been cupcake-light.`);
+    } else if (row.rank <= 3) {
+      parts.push(`A legitimate title contender. <strong>${diff >= 0 ? '+' : ''}${diff.toFixed(1)} runs per game</strong> against opponents winning <strong>${(opps*100).toFixed(0)}%</strong> of the time.`);
+    } else if (row.rank >= 15) {
+      parts.push(`Getting outscored by <strong>${Math.abs(diff).toFixed(1)} runs per game</strong>. Schedule strength hasn't helped — or hurt — much either way.`);
+    } else {
+      parts.push(`Solidly mid-pack. Run differential of <strong>${diff >= 0 ? '+' : ''}${diff.toFixed(1)}</strong> per game against balanced competition.`);
+    }
+    return parts.join(' ');
+  }
+
+  // ----- Rendering -----
+  function render(data) {
+    const rankings = data.rankings;
+
+    // Dateline & week
+    const gen = new Date(data.generated_at);
+    document.getElementById('dateline').textContent =
+      gen.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' }).toUpperCase();
+    document.getElementById('week-badge').textContent =
+      data.week ? `WEEK ${data.week} · ${data.source === 'demo' ? 'DEMO DATA' : 'LIVE'}` : 'PRESEASON';
+
+    // Main list
+    const list = document.getElementById('rankings-list');
+    list.innerHTML = '';
+    rankings.forEach((row, idx) => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'ranking-row' + (row.rank <= 3 ? ' top3' : '');
+      rowEl.style.animationDelay = `${idx * 35}ms`;
+      rowEl.dataset.teamId = row.team_id;
+
+      const diffClass = row.run_diff > 0 ? 'positive' : (row.run_diff < 0 ? 'negative' : '');
+      const diffStr = (row.run_diff > 0 ? '+' : '') + row.run_diff;
+
+      let deltaHtml = '';
+      if (row.rank_delta > 0)      deltaHtml = `<span class="delta up">▲ ${row.rank_delta}</span>`;
+      else if (row.rank_delta < 0) deltaHtml = `<span class="delta down">▼ ${Math.abs(row.rank_delta)}</span>`;
+      else                         deltaHtml = `<span class="delta flat">—</span>`;
+
+      rowEl.innerHTML = `
+        <div class="rank">${String(row.rank).padStart(2, '0')}</div>
+        <div class="team-block">
+          <div class="team-name">${row.name}</div>
+          <div class="team-meta">
+            <span class="division-chip">${row.division}</span>
+            <span>Capt. ${row.captain}</span>
+          </div>
+        </div>
+        <div class="stat">${row.wins}-${row.losses}</div>
+        <div class="stat ${diffClass}">${diffStr}</div>
+        <div class="stat big">${row.rating.toFixed(1)}</div>
+        <div class="stat">#${row.record_rank} ${deltaHtml}</div>
+      `;
+
+      const detailEl = document.createElement('div');
+      detailEl.className = 'detail';
+      detailEl.id = `detail-${row.team_id}`;
+
+      const c = row.components;
+      detailEl.innerHTML = `
+        <div>
+          <h4>Power Index Breakdown</h4>
+          <div class="component-bar">
+            <span class="label">Adj. Win %</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${(c.adj_win_pct*100).toFixed(0)}%"></div></div>
+            <span class="value">${(c.adj_win_pct*100).toFixed(1)}</span>
+          </div>
+          <div class="component-bar">
+            <span class="label">Avg Run Diff</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100, 50 + c.avg_run_diff*5).toFixed(0)}%"></div></div>
+            <span class="value">${c.avg_run_diff >= 0 ? '+' : ''}${c.avg_run_diff.toFixed(2)}</span>
+          </div>
+          <div class="component-bar">
+            <span class="label">Iter. Rating</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100, 50 + c.iter_rating*4).toFixed(0)}%"></div></div>
+            <span class="value">${c.iter_rating >= 0 ? '+' : ''}${c.iter_rating.toFixed(2)}</span>
+          </div>
+          <div class="component-bar">
+            <span class="label">Opp Win %</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${(c.opp_win_pct*100).toFixed(0)}%; background: var(--accent);"></div></div>
+            <span class="value">${(c.opp_win_pct*100).toFixed(1)}</span>
+          </div>
+        </div>
+        <div>
+          <h4>Takeaway</h4>
+          <p class="narrative">${narrative(row, rankings)}</p>
+        </div>
+      `;
+
+      rowEl.addEventListener('click', () => {
+        const wasOpen = rowEl.classList.contains('expanded');
+        document.querySelectorAll('.ranking-row.expanded').forEach(r => r.classList.remove('expanded'));
+        if (!wasOpen) rowEl.classList.add('expanded');
+      });
+
+      list.appendChild(rowEl);
+      list.appendChild(detailEl);
+    });
+
+    // Underrated / overrated
+    const underrated = [...rankings].sort((a,b) => b.rank_delta - a.rank_delta).filter(r => r.rank_delta > 0).slice(0, 3);
+    const overrated  = [...rankings].sort((a,b) => a.rank_delta - b.rank_delta).filter(r => r.rank_delta < 0).slice(0, 3);
+
+    document.getElementById('underrated-list').innerHTML = underrated.length ? underrated.map(r => `
+      <div class="sidebar-item" data-jump="${r.team_id}">
+        <div class="team">${r.name}</div>
+        <div class="desc">${r.wins}-${r.losses} record would put them at #${r.record_rank}, but tough schedule earns them <strong>#${r.rank}</strong>.</div>
+        <span class="jump">▲ ${r.rank_delta} spots ↗</span>
+      </div>
+    `).join('') : '<div class="sidebar-item"><div class="desc">No major gaps this week.</div></div>';
+
+    document.getElementById('overrated-list').innerHTML = overrated.length ? overrated.map(r => `
+      <div class="sidebar-item" data-jump="${r.team_id}">
+        <div class="team">${r.name}</div>
+        <div class="desc">${r.wins}-${r.losses} looks great, but schedule strength drops them to <strong>#${r.rank}</strong> (record says #${r.record_rank}).</div>
+        <span class="jump">▼ ${Math.abs(r.rank_delta)} spots ↘</span>
+      </div>
+    `).join('') : '<div class="sidebar-item"><div class="desc">Power Index agrees with the standings.</div></div>';
+
+    // SOS list
+    const sos = [...rankings].sort((a,b) => b.components.opp_win_pct - a.components.opp_win_pct).slice(0, 5);
+    document.getElementById('sos-list').innerHTML = sos.map((r, i) => `
+      <div class="sidebar-item" data-jump="${r.team_id}">
+        <div class="team">${i+1}. ${r.name}</div>
+        <div class="desc">Opponents are <strong>${(r.components.opp_win_pct*100).toFixed(0)}%</strong> combined. Current rank: <strong>#${r.rank}</strong>.</div>
+      </div>
+    `).join('');
+
+    // Clicks on sidebar items jump to & expand the main row
+    document.querySelectorAll('[data-jump]').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.getAttribute('data-jump');
+        const row = document.querySelector(`.ranking-row[data-team-id="${id}"]`);
+        if (!row) return;
+        document.querySelectorAll('.ranking-row.expanded').forEach(r => r.classList.remove('expanded'));
+        row.classList.add('expanded');
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+  }
+
+  loadData().then(render).catch(err => {
+    console.error(err);
+    document.getElementById('rankings-list').innerHTML =
+      '<div style="padding:40px 0;text-align:center;color:var(--ink-soft);">Could not load rankings data.</div>';
+  });
+})();
+</script>
+
+</body>
+</html>
