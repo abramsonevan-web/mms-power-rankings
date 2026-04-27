@@ -93,7 +93,14 @@ class Team:
 def _fetch(url: str) -> str:
     r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
     r.raise_for_status()
-    return r.text
+    text = r.text
+    # Debug: count tables and check for division headers
+    print(f"[debug] Fetched {url}: {len(text)} chars, "
+          f"{text.lower().count('<table')} <table> tags, "
+          f"{text.lower().count('east division')} 'east division' mentions, "
+          f"{text.lower().count('runs for')} 'runs for' mentions")
+    return text
+
  
  
 def scrape_standings() -> dict:
