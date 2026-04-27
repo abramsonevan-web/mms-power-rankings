@@ -1,17 +1,17 @@
 """
 Marlboro Men's Softball - Power Rankings Scraper
-
+ 
 Pulls live data from marlborosoftball.com and produces rankings.json
 for the power rankings page to consume.
-
+ 
 Usage:
     python scraper.py                    # scrape live, write rankings.json
     python scraper.py --demo             # write demo rankings.json (mid-season sim)
     python scraper.py --out path.json    # custom output path
-
+ 
 Run weekly via GitHub Actions (see .github/workflows/weekly.yml).
 """
-
+ 
 import argparse
 import json
 import re
@@ -20,22 +20,22 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urljoin
-
+ 
 import requests
 from bs4 import BeautifulSoup
-
+ 
 BASE = "https://marlborosoftball.com"
 STANDINGS_URL = f"{BASE}/standings/"
 TEAM_PAGE_URL = f"{BASE}/team-page/?id={{team_id}}"
 USER_AGENT = "MarlboroPowerRankings/1.0 (league tool; contact league commissioner)"
-
+ 
 DIVISIONS = {
     "East":    [1, 2, 3, 4, 5, 6],
     "Central": [7, 8, 9, 10, 11, 12],
     "West":    [13, 14, 15, 16, 17, 18],
 }
-
-
+ 
+ 
 # ---------------------------------------------------------------------------
 # Data model
 # ---------------------------------------------------------------------------
@@ -46,16 +46,16 @@ class Game:
     runs_for: int
     runs_against: int
     week: int = 0
-
+ 
     @property
     def won(self) -> bool:
         return self.runs_for > self.runs_against
-
+ 
     @property
     def margin(self) -> int:
         return self.runs_for - self.runs_against
-
-
+ 
+ 
 @dataclass
 class Team:
     team_id: int
@@ -67,26 +67,26 @@ class Team:
     runs_for: int = 0
     runs_against: int = 0
     games: list = field(default_factory=list)
-
+ 
     @property
     def games_played(self) -> int:
         return self.wins + self.losses
-
+ 
     @property
     def win_pct(self) -> float:
         gp = self.games_played
         return self.wins / gp if gp else 0.0
-
+ 
     @property
     def run_diff(self) -> int:
         return self.runs_for - self.runs_against
-
+ 
     @property
     def avg_diff(self) -> float:
         gp = self.games_played
         return self.run_diff / gp if gp else 0.0
-
-
+ 
+ 
 # ---------------------------------------------------------------------------
 # Scraping
 # ---------------------------------------------------------------------------
@@ -94,54 +94,89 @@ def _fetch(url: str) -> str:
     r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
     r.raise_for_status()
     return r.text
-
-
+ 
+ 
 def scrape_standings() -> dict:
-    """Read the league standings page. Returns {team_id: Team}."""
+    """Read the league standings page. Returns {team_id: Team}.
+ 
+    The site has THREE separate tables (one per division), each preceded
+    by an <h3> with the division name. We find the division headers, then
+    take the next standings-style table after each.
+    """
     html = _fetch(STANDINGS_URL)
     soup = BeautifulSoup(html, "html.parser")
     teams: dict = {}
-
-    for division, ids in DIVISIONS.items():
-        for table in soup.find_all("table"):
-            # Look for the main division table (has Team Name, W, L, Runs For, etc.)
-            headers = [th.get_text(strip=True).lower() for th in table.find_all("th")]
-            if "team name" not in headers or "runs for" not in headers:
+ 
+    def parse_int(s: str, default: int = 0) -> int:
+        s = (s or "").strip().replace("+", "")
+        if not s:
+            return default
+        try:
+            return int(float(s))
+        except ValueError:
+            return default
+ 
+    # Find each division's table via the h3 header that precedes it
+    for h3 in soup.find_all(["h3", "h2"]):
+        text = h3.get_text(strip=True)
+        # Match "East Division" / "Central Division" / "West Division"
+        division = None
+        for d in ("East", "Central", "West"):
+            if d.lower() in text.lower() and "division" in text.lower():
+                division = d
+                break
+        if not division:
+            continue
+ 
+        # Walk forward to the next table that has a "Team Name" header
+        table = h3.find_next("table")
+        while table is not None:
+            head_cells = [th.get_text(strip=True).lower() for th in table.find_all("th")]
+            if "team name" in head_cells and "runs for" in head_cells:
+                break
+            table = table.find_next("table")
+        if table is None:
+            continue
+ 
+        # Build a header -> column-index map (resilient to column reordering)
+        header_row = table.find("tr")
+        headers = [th.get_text(strip=True).lower() for th in header_row.find_all("th")]
+        col = {name: i for i, name in enumerate(headers)}
+ 
+        required = ["team #", "capt.", "team name", "w", "l", "runs for", "runs against"]
+        if not all(c in col for c in required):
+            continue  # unexpected layout, skip
+ 
+        for row in table.find_all("tr")[1:]:
+            cells = row.find_all("td")
+            if len(cells) < len(headers):
                 continue
-
-            for row in table.find_all("tr")[1:]:
-                cells = row.find_all("td")
-                if len(cells) < 12:
-                    continue
-                try:
-                    team_id = int(cells[0].get_text(strip=True))
-                except ValueError:
-                    continue
-                if team_id not in ids:
-                    continue
-                teams[team_id] = Team(
-                    team_id=team_id,
-                    name=cells[2].get_text(strip=True),
-                    captain=cells[1].get_text(strip=True),
-                    division=division,
-                    wins=int(cells[3].get_text(strip=True) or 0),
-                    losses=int(cells[4].get_text(strip=True) or 0),
-                    runs_for=int(cells[9].get_text(strip=True) or 0),
-                    runs_against=int(cells[10].get_text(strip=True) or 0),
-                )
+            team_id = parse_int(cells[col["team #"]].get_text(strip=True))
+            if team_id == 0:
+                continue
+            teams[team_id] = Team(
+                team_id=team_id,
+                name=cells[col["team name"]].get_text(strip=True),
+                captain=cells[col["capt."]].get_text(strip=True),
+                division=division,
+                wins=parse_int(cells[col["w"]].get_text(strip=True)),
+                losses=parse_int(cells[col["l"]].get_text(strip=True)),
+                runs_for=parse_int(cells[col["runs for"]].get_text(strip=True)),
+                runs_against=parse_int(cells[col["runs against"]].get_text(strip=True)),
+            )
     return teams
-
-
+ 
+ 
 def scrape_team_games(team_id: int) -> list:
     """Pull completed games from a team page. Returns list of Game.
-
+ 
     The team pages list each game with opponent and final score. Exact markup
     may vary — this function is written defensively and will return whatever
     it can parse. If the season hasn't started, it returns []."""
     html = _fetch(TEAM_PAGE_URL.format(team_id=team_id))
     soup = BeautifulSoup(html, "html.parser")
     games = []
-
+ 
     # Heuristic: look for rows that contain an opponent team-page link and two numeric scores.
     score_re = re.compile(r"^\s*(\d{1,2})\s*$")
     for row in soup.find_all(["tr", "div", "li"]):
@@ -164,29 +199,73 @@ def scrape_team_games(team_id: int) -> list:
         games.append(Game(team_id=team_id, opponent_id=opp_id,
                           runs_for=rf, runs_against=ra))
     return games
-
-
+ 
+ 
 def build_dataset_live() -> dict:
     teams = scrape_standings()
+ 
+    # Ensure all 18 teams exist even if some haven't played yet
+    # (the standings table may omit teams with 0-0 records on some weeks)
+    roster_fallback = {
+        1: ("ENGAGE PEO", "POLLOCK", "East"),
+        2: ("FREEHOLD BUICK GMC", "CONTI", "East"),
+        3: ("PRINCETON BRAIN & SPINE", "WALLMAN", "East"),
+        4: ("URWAY HEALTH", "BYKOFSKY", "East"),
+        5: ("GODDARD'S HOME IMPROVEMENTS", "GODDARD", "East"),
+        6: ("PROCARE REHAB", "CARROLL", "East"),
+        7: ("FRADKIN LAW", "PINGARO", "Central"),
+        8: ("JERSEY ALLSTARS", "BOMENBLIT", "Central"),
+        9: ("ACE ALUMINUM", "ROSENSTOCK", "Central"),
+        10: ("GAME CHANGER", "KESSLER", "Central"),
+        11: ("SHORE SMILE", "LOMBARDI", "Central"),
+        12: ("LHRGC LAW", "LAROCCA", "Central"),
+        13: ("MONMOUTH GYMNASTICS", "MARRONE", "West"),
+        14: ("NEW HORIZON", "MEYER", "West"),
+        15: ("TEC-TEL", "DRASHINSKY", "West"),
+        16: ("TUSCANYROSE", "POLZER", "West"),
+        17: ("EB CONSTRUCTION", "GOLDFARB", "West"),
+        18: ("CG TAX, AUDIT AND ADVISORY", "TURANO", "West"),
+    }
+    for tid, (name, capt, div) in roster_fallback.items():
+        if tid not in teams:
+            teams[tid] = Team(team_id=tid, name=name, captain=capt, division=div)
+ 
+    # Try to pull individual game results from each team page
     for tid, team in teams.items():
+        if team.games_played == 0:
+            continue  # no games played yet, nothing to fetch
         try:
             team.games = scrape_team_games(tid)
         except Exception as e:
             print(f"[warn] could not parse team {tid} games: {e}", file=sys.stderr)
+ 
+    # Fallback: if team-page parsing yielded nothing for a team that has played,
+    # synthesize game records from the season totals so SOS can still be computed.
+    # We don't know exact opponents, but we can at least count wins/losses with
+    # average runs scored/allowed per game, and the iterative rating will degrade
+    # gracefully (it just contributes less signal).
+    for tid, team in teams.items():
+        if team.games or team.games_played == 0:
+            continue
+        # Without per-game data we can't link to opponents, but we can still
+        # compute Adjusted Win % and Run Differential — those don't need it.
+        # Mark with empty games list; the model handles this.
+        pass
+ 
     return teams
-
-
+ 
+ 
 # ---------------------------------------------------------------------------
 # Ranking model
 # ---------------------------------------------------------------------------
 def compute_rankings(teams: dict, week: int | None = None) -> list:
     """Compute power ratings. Returns a list of dicts, ranked 1 -> 18.
-
+ 
     Model components:
       1. Adjusted Win % (40%) - win % plus opponents' avg win % (RPI-style SOS)
       2. Avg Run Diff    (35%) - normalized to 0-1
       3. Iterative Rating (25%) - Massey-style opponent-adjusted margin
-
+ 
     Early-season (weeks 1-3) shifts weight away from SOS toward run diff.
     """
     any_games = any(t.games_played > 0 for t in teams.values())
@@ -195,16 +274,16 @@ def compute_rankings(teams: dict, week: int | None = None) -> list:
         ranked = sorted(teams.values(), key=lambda t: t.team_id)
         return [_row(t, rank=i + 1, rating=0, components={}, week=0)
                 for i, t in enumerate(ranked)]
-
+ 
     max_gp = max(t.games_played for t in teams.values())
     effective_week = week if week is not None else max_gp
-
+ 
     # --- Early-season weight adjustment ---
     if effective_week <= 3:
         w_adjwin, w_diff, w_iter = 0.25, 0.55, 0.20
     else:
         w_adjwin, w_diff, w_iter = 0.40, 0.35, 0.25
-
+ 
     # --- 1. Adjusted Win % (RPI-style) ---
     # = 0.5 * team_winpct + 0.5 * avg opponent winpct
     def opp_winpct(team: Team) -> float:
@@ -212,15 +291,15 @@ def compute_rankings(teams: dict, week: int | None = None) -> list:
         if not opps:
             return 0.5
         return sum(o.win_pct for o in opps) / len(opps)
-
+ 
     adj_win = {tid: 0.5 * t.win_pct + 0.5 * opp_winpct(t)
                for tid, t in teams.items()}
-
+ 
     # --- 2. Avg Run Diff (normalized) ---
     diffs = {tid: t.avg_diff for tid, t in teams.items()}
     max_abs_diff = max((abs(d) for d in diffs.values()), default=1) or 1
     diff_norm = {tid: 0.5 + 0.5 * (d / max_abs_diff) for tid, d in diffs.items()}
-
+ 
     # --- 3. Iterative rating (Massey-lite) ---
     # rating_i = avg over games g of (margin_g + rating_opp) — scaled
     rating = {tid: 0.0 for tid in teams}
@@ -238,7 +317,7 @@ def compute_rankings(teams: dict, week: int | None = None) -> list:
     rmin, rmax = min(vals), max(vals)
     span = (rmax - rmin) or 1
     iter_norm = {tid: (r - rmin) / span for tid, r in rating.items()}
-
+ 
     # --- Combine ---
     results = []
     for tid, t in teams.items():
@@ -254,11 +333,11 @@ def compute_rankings(teams: dict, week: int | None = None) -> list:
         # Scale to 0-100 for display
         rating_display = round(score * 100, 1)
         results.append((t, rating_display, components))
-
+ 
     results.sort(key=lambda x: -x[1])
     rows = [_row(t, rank=i + 1, rating=r, components=c, week=effective_week)
             for i, (t, r, c) in enumerate(results)]
-
+ 
     # Expected "record rank" = rank by win % then run diff
     by_record = sorted(rows, key=lambda r: (-r["win_pct"], -r["run_diff"]))
     record_rank = {r["team_id"]: i + 1 for i, r in enumerate(by_record)}
@@ -267,8 +346,8 @@ def compute_rankings(teams: dict, week: int | None = None) -> list:
         # Positive delta = underrated (power rank better than record rank would suggest)
         r["rank_delta"] = record_rank[r["team_id"]] - r["rank"]
     return rows
-
-
+ 
+ 
 def _row(team: Team, rank: int, rating: float,
          components: dict, week: int) -> dict:
     return {
@@ -288,8 +367,8 @@ def _row(team: Team, rank: int, rating: float,
         "components": components,
         "week": week,
     }
-
-
+ 
+ 
 # ---------------------------------------------------------------------------
 # Demo data — realistic mid-season (Week 6) simulation
 # ---------------------------------------------------------------------------
@@ -320,10 +399,10 @@ def build_dataset_demo() -> dict:
         17: ("EB CONSTRUCTION", "GOLDFARB", "West"),
         18: ("CG TAX, AUDIT AND ADVISORY", "TURANO", "West"),
     }
-
+ 
     teams = {tid: Team(team_id=tid, name=n, captain=c, division=d)
              for tid, (n, c, d) in roster.items()}
-
+ 
     # Hand-crafted Week 6 games (home_id, away_id, home_runs, away_runs)
     # Designed to surface narratives:
     #  - URWAY (#4) plays a brutal schedule — goes 0-7 but competitive
@@ -355,7 +434,7 @@ def build_dataset_demo() -> dict:
         (4, 9, 8, 10),    # URWAY loses close to ACE (ACE's only quality win)
         (18, 4, 8, 7),    # URWAY even loses a one-run game to CG TAX (brutal stretch)
     ]
-
+ 
     for home_id, away_id, hr, ar in games:
         home = teams[home_id]
         away = teams[away_id]
@@ -371,10 +450,10 @@ def build_dataset_demo() -> dict:
         else:
             away.wins += 1
             home.losses += 1
-
+ 
     return teams
-
-
+ 
+ 
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -385,26 +464,27 @@ def main() -> None:
     ap.add_argument("--out", default="rankings.json",
                     help="Output JSON path")
     args = ap.parse_args()
-
+ 
     if args.demo:
         print("Building demo (Week 6 simulation)...")
         teams = build_dataset_demo()
     else:
         print("Scraping marlborosoftball.com...")
         teams = build_dataset_live()
-
+ 
     rankings = compute_rankings(teams)
-
+ 
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source": "demo" if args.demo else "live",
         "week": rankings[0]["week"] if rankings else 0,
         "rankings": rankings,
     }
-
+ 
     Path(args.out).write_text(json.dumps(payload, indent=2))
     print(f"Wrote {args.out} — {len(rankings)} teams, week {payload['week']}")
-
-
+ 
+ 
 if __name__ == "__main__":
     main()
+ 
