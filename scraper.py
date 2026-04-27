@@ -27,7 +27,7 @@ from bs4 import BeautifulSoup
 BASE = "https://marlborosoftball.com"
 STANDINGS_URL = f"{BASE}/standings/"
 TEAM_PAGE_URL = f"{BASE}/team-page/?id={{team_id}}"
-USER_AGENT = "MarlboroPowerRankings/1.0 (league tool; contact league commissioner)"
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
  
 DIVISIONS = {
     "East":    [1, 2, 3, 4, 5, 6],
