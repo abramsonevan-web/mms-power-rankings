@@ -33,5 +33,7 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "Weekly rankings update: $(date -u +'%Y-%m-%d')"
+            # Pull any remote changes first, then push (handles race conditions)
+            git pull --rebase origin main
             git push
           fi
