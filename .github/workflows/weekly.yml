@@ -1,11 +1,11 @@
 name: Weekly Power Rankings Update
-
+ 
 on:
   schedule:
     # Every Monday at 9:00 AM Eastern (13:00 UTC) — after Sunday games wrap
     - cron: '0 13 * * 1'
   workflow_dispatch:   # Allow manual trigger from the Actions tab
-
+ 
 jobs:
   update-rankings:
     runs-on: ubuntu-latest
@@ -13,27 +13,35 @@ jobs:
       contents: write  # Needed to commit rankings.json back to the repo
     steps:
       - uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 0   # Full history so rebase works cleanly
+ 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
+ 
       - name: Install dependencies
         run: pip install requests beautifulsoup4
-
+ 
       - name: Scrape site and compute rankings
         run: python scraper.py --out rankings.json
-
-      - name: Commit updated rankings
+ 
+      - name: Commit and push updated rankings
         run: |
           git config user.name  "mms-rankings-bot"
           git config user.email "bot@marlborosoftball.com"
           git add rankings.json
           if git diff --staged --quiet; then
             echo "No changes to commit."
-          else
-            git commit -m "Weekly rankings update: $(date -u +'%Y-%m-%d')"
-            # Pull any remote changes first, then push (handles race conditions)
-            git pull --rebase origin main
-            git push
+            exit 0
           fi
+          git commit -m "Weekly rankings update: $(date -u +'%Y-%m-%d')"
+          # Retry loop: pull-rebase then push, in case main moved during the run
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            echo "Push attempt $i failed, retrying in 5s..."
+            sleep 5
+          done
+          echo "Failed to push after 3 attempts."
+          exit 1
+ 
