@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playoff Odds · MMS Power Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4efe6; --ink: #111; --ink-soft: #3a3a3a; --rule: #1a1a1a;
+    --paper: #faf6ed; --accent: #c8102e; --positive: #2d5a3d; --negative: #c8102e;
+    --grid: rgba(17,17,17,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: 'Newsreader', Georgia, serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  body {
+    background-image: repeating-linear-gradient(0deg, transparent 0, transparent 39px, rgba(17,17,17,0.025) 39px, rgba(17,17,17,0.025) 40px);
+    background-attachment: fixed;
+  }
+  .masthead { border-bottom: 6px double var(--ink); padding: 24px 5vw 20px; max-width: 1400px; margin: 0 auto; }
+  .masthead-top { display: flex; justify-content: space-between; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 12px; }
+  .masthead h1 { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: clamp(44px, 9vw, 110px); line-height: 0.9; letter-spacing: -0.02em; text-transform: uppercase; }
+  .masthead h1 .accent { color: var(--accent); font-style: italic; }
+  .masthead .tagline { font-style: italic; font-size: clamp(15px, 1.6vw, 19px); color: var(--ink-soft); margin-top: 8px; max-width: 780px; line-height: 1.4; }
+  .masthead .week-badge { display: inline-block; background: var(--ink); color: var(--paper); padding: 4px 14px; font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 16px; }
+
+  .nav { max-width: 1400px; margin: 20px auto 0; padding: 0 5vw; display: flex; gap: 4px; border-bottom: 2px solid var(--ink); flex-wrap: wrap; }
+  .nav a { display: inline-block; padding: 10px 18px; font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; text-decoration: none; color: var(--ink-soft); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+  .nav a:hover { color: var(--ink); }
+  .nav a.active { color: var(--ink); border-bottom-color: var(--accent); background: var(--paper); }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px 5vw 80px; }
+
+  .status { padding: 20px 28px; background: var(--paper); border: 1px solid var(--rule); margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .status .label { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-soft); }
+  .status .value { font-family: 'Oswald', sans-serif; font-size: 18px; font-weight: 600; }
+
+  .settings { padding: 16px 24px; background: var(--ink); color: var(--paper); margin-bottom: 32px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .settings label { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
+  .settings input { padding: 8px 14px; font-family: 'JetBrains Mono', monospace; font-size: 14px; width: 100px; }
+  .settings button { padding: 10px 20px; background: var(--accent); color: white; border: none; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; cursor: pointer; }
+  .settings button:hover { background: var(--accent-dark); }
+
+  h2 { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 28px; letter-spacing: 0.02em; text-transform: uppercase; border-bottom: 3px solid var(--ink); padding-bottom: 8px; margin-bottom: 16px; }
+
+  .proj-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; font-size: 13px; }
+  .proj-table th { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 8px; text-align: right; border-bottom: 2px solid var(--ink); color: var(--ink-soft); }
+  .proj-table th:first-child, .proj-table th:nth-child(2) { text-align: left; }
+  .proj-table td { padding: 14px 8px; text-align: right; border-bottom: 1px solid var(--grid); font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+  .proj-table td:first-child { font-family: 'Oswald', sans-serif; font-size: 18px; font-weight: 700; text-align: left; width: 40px; }
+  .proj-table td:nth-child(2) { font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.01em; text-align: left; }
+  .proj-table tr:hover td { background: var(--paper); }
+
+  .odds-cell { position: relative; padding-right: 14px !important; }
+  .odds-cell .bar { position: absolute; bottom: 0; left: 8px; right: 14px; height: 3px; background: rgba(17,17,17,0.05); }
+  .odds-cell .bar-fill { height: 100%; background: var(--accent); }
+  .odds-cell.top { color: var(--positive); font-weight: 700; }
+  .odds-cell.strong { font-weight: 700; }
+  .odds-cell.dim { color: var(--ink-soft); }
+
+  .methodology { padding: 24px 28px; background: var(--ink); color: var(--paper); margin-top: 40px; font-size: 13px; line-height: 1.6; }
+  .methodology h3 { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+  .methodology p { max-width: 720px; margin-bottom: 8px; }
+
+  footer { max-width: 1400px; margin: 0 auto; padding: 28px 5vw; border-top: 3px double var(--ink); font-size: 12px; color: var(--ink-soft); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-top">
+    <span>MARLBORO MEN'S SOFTBALL · PLAYOFF ODDS</span>
+    <span id="dateline">LOADING…</span>
+  </div>
+  <h1>Playoff<br><span class="accent">Odds</span></h1>
+  <p class="tagline">Monte Carlo simulation of the remaining season. Every team plays out their schedule 10,000 times based on Power Index ratings, and we count how often each finishes in each playoff slot.</p>
+  <div class="week-badge" id="week-badge">WEEK 0</div>
+</header>
+
+<nav class="nav">
+  <a href="index.html">Rankings</a>
+  <a href="podcast.html">Podcast Prep</a>
+  <a href="matchups.html">Head-to-Head</a>
+  <a href="projections.html" class="active">Playoff Odds</a>
+</nav>
+
+<main class="container">
+
+  <div class="status">
+    <div><div class="label">Simulations</div><div class="value" id="sim-count">Running…</div></div>
+    <div><div class="label">Season Length Assumed</div><div class="value" id="season-len">—</div></div>
+    <div><div class="label">Time to run</div><div class="value" id="sim-time">—</div></div>
+  </div>
+
+  <div class="settings">
+    <label>Games per team total:</label>
+    <input type="number" id="games-input" value="21" min="10" max="30">
+    <label>Simulations:</label>
+    <input type="number" id="sims-input" value="10000" min="500" max="50000" step="500">
+    <button id="rerun">Re-run</button>
+  </div>
+
+  <h2>Projected Final Standings</h2>
+  <table class="proj-table" id="finish-table">
+    <thead>
+      <tr>
+        <th>#</th><th>Team</th>
+        <th>Avg Wins</th>
+        <th>Top 3</th>
+        <th>Top 6</th>
+        <th>Top 12</th>
+        <th>Play-In</th>
+        <th>Miss Playoffs</th>
+      </tr>
+    </thead>
+    <tbody id="finish-body"></tbody>
+  </table>
+
+  <div class="methodology">
+    <h3>How this simulation works</h3>
+    <p>Each simulation plays out every team's remaining games. Opponents are sampled from a division-weighted schedule (2/3 divisional, 1/3 cross-division), matching how the actual MMS schedule generally distributes.</p>
+    <p>Each simulated game uses a logistic function on the two teams' iterative Power Index ratings to compute win probability, with small random variance added to reflect softball's inherent chaos. The projections should be interpreted as "based on how each team has looked so far, here are the finish distributions" — not a prediction of any specific game.</p>
+    <p>Adjust the "Games per team total" if the actual season length differs from the default of 21. Rerun the simulation any time.</p>
+  </div>
+
+</main>
+
+<footer>
+  <span>© 2026 Marlboro Men's Softball League · Monte Carlo playoff projections</span>
+  <span>Data: <a href="https://marlborosoftball.com/standings/" target="_blank">marlborosoftball.com</a></span>
+</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  async function loadData() {
+    const res = await fetch('rankings.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to load');
+    return await res.json();
+  }
+
+  function winProb(ra, rb) {
+    // Logistic based on iterative rating diff; small random game-to-game variance
+    const diff = ra - rb;
+    return 1 / (1 + Math.exp(-diff / 4.5));
+  }
+
+  function runSim(rankings, gamesTarget, numSims) {
+    const teams = rankings.map(r => ({
+      id: r.team_id,
+      name: r.name,
+      division: r.division,
+      currentWins: r.wins,
+      currentLosses: r.losses,
+      rating: r.components.iter_rating,
+    }));
+
+    // Divisional groupings
+    const teamsByDivision = { East: [], Central: [], West: [] };
+    teams.forEach(t => teamsByDivision[t.division].push(t));
+
+    // Aggregate stats across sims
+    const counts = teams.map(() => ({
+      wins: 0,
+      top3: 0, top6: 0, top12: 0, playIn: 0, missPlayoffs: 0,
+      winsSum: 0,
+      finishHistogram: new Array(18).fill(0),
+    }));
+    const idxById = {};
+    teams.forEach((t, i) => idxById[t.id] = i);
+
+    for (let sim = 0; sim < numSims; sim++) {
+      const wins = teams.map(t => t.currentWins);
+      const losses = teams.map(t => t.currentLosses);
+
+      // Play each team's remaining games
+      for (let i = 0; i < teams.length; i++) {
+        const remaining = gamesTarget - (wins[i] + losses[i]);
+        if (remaining <= 0) continue;
+
+        for (let g = 0; g < remaining; g++) {
+          // Pick opponent: 2/3 chance divisional, 1/3 cross-division
+          const rand = Math.random();
+          let opponent;
+          if (rand < 0.67) {
+            const divPool = teamsByDivision[teams[i].division].filter(t => t.id !== teams[i].id);
+            opponent = divPool[Math.floor(Math.random() * divPool.length)];
+          } else {
+            const crossPool = teams.filter(t => t.division !== teams[i].division);
+            opponent = crossPool[Math.floor(Math.random() * crossPool.length)];
+          }
+          const p = winProb(teams[i].rating, opponent.rating);
+          // Add mild noise (softball variance)
+          const noisyP = Math.max(0.05, Math.min(0.95, p + (Math.random() - 0.5) * 0.1));
+          if (Math.random() < noisyP) wins[i]++;
+          else losses[i]++;
+        }
+      }
+
+      // Rank teams by simulated wins (tiebreaker: current rating)
+      const sortedIdx = teams.map((_, i) => i).sort((a, b) => {
+        if (wins[b] !== wins[a]) return wins[b] - wins[a];
+        return teams[b].rating - teams[a].rating;
+      });
+
+      sortedIdx.forEach((teamIdx, finishPos) => {
+        counts[teamIdx].winsSum += wins[teamIdx];
+        counts[teamIdx].finishHistogram[finishPos]++;
+        if (finishPos < 3)  counts[teamIdx].top3++;
+        if (finishPos < 6)  counts[teamIdx].top6++;
+        if (finishPos < 12) counts[teamIdx].top12++;
+        if (finishPos >= 12 && finishPos < 16) counts[teamIdx].playIn++;
+        if (finishPos >= 12) counts[teamIdx].missPlayoffs++;
+      });
+    }
+
+    return teams.map((t, i) => ({
+      ...t,
+      avgWins: counts[i].winsSum / numSims,
+      top3: counts[i].top3 / numSims,
+      top6: counts[i].top6 / numSims,
+      top12: counts[i].top12 / numSims,
+      playIn: counts[i].playIn / numSims,
+      missPlayoffs: (numSims - counts[i].top12) / numSims,
+      histogram: counts[i].finishHistogram.map(c => c / numSims),
+    })).sort((a, b) => b.avgWins - a.avgWins);
+  }
+
+  function pct(x) {
+    if (x >= 0.995) return '>99%';
+    if (x <= 0.005) return '<1%';
+    return (x * 100).toFixed(1) + '%';
+  }
+
+  function oddsCell(x) {
+    if (x >= 0.995) return `<td class="odds-cell top">>99%<div class="bar"><div class="bar-fill" style="width:100%"></div></div></td>`;
+    if (x <= 0.005) return `<td class="odds-cell dim">&lt;1%</td>`;
+    const cls = x >= 0.5 ? 'strong' : (x < 0.1 ? 'dim' : '');
+    return `<td class="odds-cell ${cls}">${(x*100).toFixed(1)}%<div class="bar"><div class="bar-fill" style="width:${(x*100).toFixed(1)}%"></div></div></td>`;
+  }
+
+  function renderTable(results) {
+    const rows = results.map((r, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${r.name}</td>
+        <td>${r.avgWins.toFixed(1)}</td>
+        ${oddsCell(r.top3)}
+        ${oddsCell(r.top6)}
+        ${oddsCell(r.top12)}
+        ${oddsCell(r.playIn)}
+        ${oddsCell(r.missPlayoffs)}
+      </tr>
+    `).join('');
+    document.getElementById('finish-body').innerHTML = rows;
+  }
+
+  async function runAndRender(data) {
+    const gamesTarget = parseInt(document.getElementById('games-input').value, 10) || 21;
+    const numSims = parseInt(document.getElementById('sims-input').value, 10) || 10000;
+    document.getElementById('sim-count').textContent = 'Running...';
+    document.getElementById('season-len').textContent = gamesTarget + ' games';
+    document.getElementById('sim-time').textContent = '—';
+
+    // Yield so UI updates first
+    await new Promise(r => setTimeout(r, 20));
+
+    const t0 = performance.now();
+    const results = runSim(data.rankings, gamesTarget, numSims);
+    const elapsed = ((performance.now() - t0) / 1000).toFixed(1);
+
+    document.getElementById('sim-count').textContent = numSims.toLocaleString();
+    document.getElementById('sim-time').textContent = elapsed + 's';
+    renderTable(results);
+  }
+
+  function render(data) {
+    const gen = new Date(data.generated_at);
+    document.getElementById('dateline').textContent =
+      gen.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' }).toUpperCase();
+    document.getElementById('week-badge').textContent =
+      data.week ? `WEEK ${data.week}` : 'PRESEASON';
+
+    document.getElementById('rerun').addEventListener('click', () => runAndRender(data));
+    runAndRender(data);
+  }
+
+  loadData().then(render).catch(err => {
+    console.error(err);
+    document.getElementById('finish-body').innerHTML =
+      '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--ink-soft);">Could not load rankings data.</td></tr>';
+  });
+})();
+</script>
+</body>
+</html>

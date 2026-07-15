@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Head-to-Head · MMS Power Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4efe6; --ink: #111; --ink-soft: #3a3a3a; --rule: #1a1a1a;
+    --paper: #faf6ed; --accent: #c8102e; --positive: #2d5a3d; --negative: #c8102e;
+    --grid: rgba(17,17,17,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: 'Newsreader', Georgia, serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  body {
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0, transparent 39px, rgba(17,17,17,0.025) 39px, rgba(17,17,17,0.025) 40px);
+    background-attachment: fixed;
+  }
+  .masthead { border-bottom: 6px double var(--ink); padding: 24px 5vw 20px; max-width: 1400px; margin: 0 auto; }
+  .masthead-top { display: flex; justify-content: space-between; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 12px; }
+  .masthead h1 { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: clamp(44px, 9vw, 110px); line-height: 0.9; letter-spacing: -0.02em; text-transform: uppercase; }
+  .masthead h1 .accent { color: var(--accent); font-style: italic; }
+  .masthead .tagline { font-style: italic; font-size: clamp(15px, 1.6vw, 19px); color: var(--ink-soft); margin-top: 8px; max-width: 780px; line-height: 1.4; }
+  .masthead .week-badge { display: inline-block; background: var(--ink); color: var(--paper); padding: 4px 14px; font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 16px; }
+
+  .nav { max-width: 1400px; margin: 20px auto 0; padding: 0 5vw; display: flex; gap: 4px; border-bottom: 2px solid var(--ink); flex-wrap: wrap; }
+  .nav a { display: inline-block; padding: 10px 18px; font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; text-decoration: none; color: var(--ink-soft); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+  .nav a:hover { color: var(--ink); }
+  .nav a.active { color: var(--ink); border-bottom-color: var(--accent); background: var(--paper); }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px 5vw 80px; }
+
+  /* Matchup finder */
+  .finder { background: var(--paper); border: 1px solid var(--rule); padding: 28px; margin-bottom: 40px; position: relative; }
+  .finder::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--accent); }
+  .finder h2 { font-family: 'Oswald', sans-serif; font-size: 22px; letter-spacing: 0.02em; text-transform: uppercase; margin-bottom: 16px; }
+  .picker-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: center; margin-bottom: 20px; }
+  @media (max-width: 700px) { .picker-row { grid-template-columns: 1fr; } .picker-row .vs { display: none; } }
+  .picker-row select { width: 100%; padding: 12px 16px; font-family: 'Oswald', sans-serif; font-size: 15px; text-transform: uppercase; letter-spacing: 0.02em; background: white; border: 2px solid var(--ink); font-weight: 600; }
+  .picker-row .vs { font-family: 'Oswald', sans-serif; font-size: 36px; font-weight: 700; color: var(--accent); }
+  .prediction { background: var(--ink); color: var(--paper); padding: 28px; text-align: center; }
+  .prediction .verdict { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 8px; }
+  .prediction .odds { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: rgba(250,246,237,0.7); }
+  .prediction .split { display: flex; margin-top: 20px; height: 12px; overflow: hidden; }
+  .prediction .split-a { background: var(--accent); }
+  .prediction .split-b { background: rgba(250,246,237,0.3); }
+
+  /* Grid */
+  .grid-section h2 { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 28px; letter-spacing: 0.02em; text-transform: uppercase; border-bottom: 3px solid var(--ink); padding-bottom: 8px; margin-bottom: 16px; }
+  .grid-section .caption { font-size: 14px; color: var(--ink-soft); margin-bottom: 24px; font-style: italic; }
+  .grid-wrap { overflow-x: auto; padding-bottom: 12px; }
+  table.matrix { border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  table.matrix th, table.matrix td { width: 42px; height: 42px; text-align: center; border: 1px solid var(--grid); position: relative; padding: 0; }
+  table.matrix th { font-family: 'Oswald', sans-serif; font-weight: 600; letter-spacing: 0.02em; padding: 6px 4px; background: var(--paper); }
+  table.matrix th.row-header { text-align: left; padding-left: 10px; padding-right: 14px; width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+  table.matrix th.diag { background: var(--ink); color: var(--paper); }
+  table.matrix td.diag { background: rgba(17,17,17,0.06); color: var(--ink-soft); }
+  table.matrix td.win { background: rgba(45,90,61,0.12); color: var(--positive); font-weight: 700; }
+  table.matrix td.loss { background: rgba(200,16,46,0.08); color: var(--accent); font-weight: 600; }
+  table.matrix td.strong-win { background: rgba(45,90,61,0.35); }
+  table.matrix td.strong-loss { background: rgba(200,16,46,0.28); color: var(--accent-dark); }
+
+  .legend { display: flex; gap: 20px; margin-top: 16px; font-size: 12px; color: var(--ink-soft); font-family: 'JetBrains Mono', monospace; flex-wrap: wrap; }
+  .legend .swatch { display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: middle; border: 1px solid var(--grid); }
+
+  footer { max-width: 1400px; margin: 0 auto; padding: 28px 5vw; border-top: 3px double var(--ink); font-size: 12px; color: var(--ink-soft); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-top">
+    <span>MARLBORO MEN'S SOFTBALL · HEAD-TO-HEAD</span>
+    <span id="dateline">LOADING…</span>
+  </div>
+  <h1>Head to<br><span class="accent">Head</span></h1>
+  <p class="tagline">Model-based win probability for any matchup, using each team's iterative Power Index rating. Not who did win — who <em>would</em> win, based on how the teams have looked all season.</p>
+  <div class="week-badge" id="week-badge">WEEK 0</div>
+</header>
+
+<nav class="nav">
+  <a href="index.html">Rankings</a>
+  <a href="podcast.html">Podcast Prep</a>
+  <a href="matchups.html" class="active">Head-to-Head</a>
+  <a href="projections.html">Playoff Odds</a>
+</nav>
+
+<main class="container">
+
+  <section class="finder">
+    <h2>Matchup Finder</h2>
+    <div class="picker-row">
+      <select id="team-a"></select>
+      <span class="vs">VS</span>
+      <select id="team-b"></select>
+    </div>
+    <div class="prediction" id="prediction">
+      <div class="verdict">Select two teams</div>
+      <div class="odds">Predicted win probability based on Power Index ratings</div>
+    </div>
+  </section>
+
+  <section class="grid-section">
+    <h2>The Full Grid</h2>
+    <p class="caption">Each cell shows the row team's predicted win probability against the column team. Green = favored to win. Read the row across to see how a team stacks up against everyone else.</p>
+    <div class="grid-wrap">
+      <table class="matrix" id="matrix"></table>
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background: rgba(45,90,61,0.35);"></span>Strong favorite (65%+)</span>
+      <span><span class="swatch" style="background: rgba(45,90,61,0.12);"></span>Slight favorite (50-65%)</span>
+      <span><span class="swatch" style="background: rgba(200,16,46,0.08);"></span>Slight underdog (35-50%)</span>
+      <span><span class="swatch" style="background: rgba(200,16,46,0.28);"></span>Strong underdog (under 35%)</span>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>© 2026 Marlboro Men's Softball League · Head-to-head predictions</span>
+  <span>Data: <a href="https://marlborosoftball.com/standings/" target="_blank">marlborosoftball.com</a></span>
+</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  async function loadData() {
+    const res = await fetch('rankings.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to load');
+    return await res.json();
+  }
+
+  // Convert iterative rating difference to win probability using a logistic curve.
+  // Calibrated so ~+5 rating difference = 70% win prob, ~+10 = 82%, etc.
+  function winProb(ratingA, ratingB) {
+    const diff = ratingA - ratingB;
+    return 1 / (1 + Math.exp(-diff / 4.5));
+  }
+
+  function render(data) {
+    const r = data.rankings;
+    const gen = new Date(data.generated_at);
+    document.getElementById('dateline').textContent =
+      gen.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' }).toUpperCase();
+    document.getElementById('week-badge').textContent =
+      data.week ? `WEEK ${data.week}` : 'PRESEASON';
+
+    // Populate pickers
+    const teamsByRating = [...r].sort((a,b) => b.rating - a.rating);
+    const selA = document.getElementById('team-a');
+    const selB = document.getElementById('team-b');
+    teamsByRating.forEach(t => {
+      const opts = `<option value="${t.team_id}">${t.name} (#${t.rank})</option>`;
+      selA.insertAdjacentHTML('beforeend', opts);
+      selB.insertAdjacentHTML('beforeend', opts);
+    });
+    if (teamsByRating.length >= 2) {
+      selA.value = teamsByRating[0].team_id;
+      selB.value = teamsByRating[1].team_id;
+    }
+
+    function updatePrediction() {
+      const idA = parseInt(selA.value, 10);
+      const idB = parseInt(selB.value, 10);
+      const a = r.find(t => t.team_id === idA);
+      const b = r.find(t => t.team_id === idB);
+      const pred = document.getElementById('prediction');
+
+      if (!a || !b || a.team_id === b.team_id) {
+        pred.innerHTML = `<div class="verdict">Pick two different teams</div><div class="odds">Head-to-head predictions require two teams.</div>`;
+        return;
+      }
+
+      const pA = winProb(a.components.iter_rating, b.components.iter_rating);
+      const pB = 1 - pA;
+      const favorite = pA >= 0.5 ? a : b;
+      const underdog = pA >= 0.5 ? b : a;
+      const favProb  = pA >= 0.5 ? pA : pB;
+
+      pred.innerHTML = `
+        <div class="verdict">${favorite.name}</div>
+        <div class="odds">favored ${(favProb*100).toFixed(1)}% over ${underdog.name} (${((1-favProb)*100).toFixed(1)}%)</div>
+        <div class="split">
+          <div class="split-a" style="width:${(favProb*100).toFixed(1)}%"></div>
+          <div class="split-b" style="width:${((1-favProb)*100).toFixed(1)}%"></div>
+        </div>
+      `;
+    }
+
+    selA.addEventListener('change', updatePrediction);
+    selB.addEventListener('change', updatePrediction);
+    updatePrediction();
+
+    // Build the matrix — rows and cols sorted by rank
+    const byRank = [...r].sort((a,b) => a.rank - b.rank);
+    let html = '<tr><th class="diag"></th>';
+    byRank.forEach(t => { html += `<th title="${t.name}">${t.team_id}</th>`; });
+    html += '</tr>';
+
+    byRank.forEach(rowT => {
+      html += `<tr><th class="row-header" title="${rowT.name}">#${rowT.rank} ${rowT.name}</th>`;
+      byRank.forEach(colT => {
+        if (rowT.team_id === colT.team_id) {
+          html += '<td class="diag">—</td>';
+        } else {
+          const p = winProb(rowT.components.iter_rating, colT.components.iter_rating);
+          let cls;
+          if (p >= 0.65) cls = 'strong-win';
+          else if (p >= 0.50) cls = 'win';
+          else if (p >= 0.35) cls = 'loss';
+          else cls = 'strong-loss';
+          html += `<td class="${cls}" title="${rowT.name} vs ${colT.name}: ${(p*100).toFixed(1)}%">${Math.round(p*100)}</td>`;
+        }
+      });
+      html += '</tr>';
+    });
+
+    document.getElementById('matrix').innerHTML = html;
+  }
+
+  loadData().then(render).catch(err => {
+    console.error(err);
+    document.getElementById('matrix').innerHTML = '<tr><td>Could not load data.</td></tr>';
+  });
+})();
+</script>
+</body>
+</html>

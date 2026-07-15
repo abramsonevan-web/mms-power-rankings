@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Podcast Prep · MMS Power Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4efe6; --ink: #111; --ink-soft: #3a3a3a; --rule: #1a1a1a;
+    --paper: #faf6ed; --accent: #c8102e; --accent-dark: #8a0b1f;
+    --positive: #2d5a3d; --negative: #c8102e; --grid: rgba(17,17,17,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: 'Newsreader', Georgia, serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  body {
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0, transparent 39px, rgba(17,17,17,0.025) 39px, rgba(17,17,17,0.025) 40px),
+      radial-gradient(ellipse at 20% 10%, rgba(200,16,46,0.04), transparent 50%);
+    background-attachment: fixed;
+  }
+  .masthead { border-bottom: 6px double var(--ink); padding: 24px 5vw 20px; max-width: 1400px; margin: 0 auto; position: relative; }
+  .masthead::before { content: ''; position: absolute; top: 8px; left: 5vw; right: 5vw; height: 1px; background: var(--ink); }
+  .masthead-top { display: flex; justify-content: space-between; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 12px; }
+  .masthead h1 { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: clamp(44px, 9vw, 110px); line-height: 0.9; letter-spacing: -0.02em; text-transform: uppercase; }
+  .masthead h1 .accent { color: var(--accent); font-style: italic; }
+  .masthead .tagline { font-style: italic; font-size: clamp(15px, 1.6vw, 19px); color: var(--ink-soft); margin-top: 8px; max-width: 780px; line-height: 1.4; }
+  .masthead .week-badge { display: inline-block; background: var(--ink); color: var(--paper); padding: 4px 14px; font-family: 'Oswald', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 16px; }
+
+  .nav { max-width: 1400px; margin: 20px auto 0; padding: 0 5vw; display: flex; gap: 4px; border-bottom: 2px solid var(--ink); flex-wrap: wrap; }
+  .nav a { display: inline-block; padding: 10px 18px; font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; text-decoration: none; color: var(--ink-soft); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+  .nav a:hover { color: var(--ink); }
+  .nav a.active { color: var(--ink); border-bottom-color: var(--accent); background: var(--paper); }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 32px 5vw 80px; }
+
+  .story-block { background: var(--paper); border: 1px solid var(--rule); margin-bottom: 24px; position: relative; }
+  .story-block::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--accent); }
+  .story-block .kicker { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); padding: 18px 28px 0; }
+  .story-block h2 { font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 32px; letter-spacing: 0.01em; text-transform: uppercase; padding: 4px 28px 6px; line-height: 1.1; }
+  .story-block .dek { font-style: italic; font-size: 16px; color: var(--ink-soft); padding: 0 28px 20px; line-height: 1.4; }
+  .story-block .body { padding: 0 28px 24px; font-size: 15px; line-height: 1.6; }
+  .story-block .body p { margin-bottom: 12px; }
+  .story-block .body strong { background: linear-gradient(transparent 65%, rgba(200,16,46,0.25) 65%); font-weight: 600; }
+  .story-block .stats-strip { display: flex; gap: 24px; padding: 12px 28px; background: rgba(17,17,17,0.04); border-top: 1px solid var(--grid); font-family: 'JetBrains Mono', monospace; font-size: 12px; flex-wrap: wrap; }
+  .story-block .stats-strip .stat-pair { display: flex; flex-direction: column; gap: 2px; }
+  .story-block .stats-strip .label { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--ink-soft); }
+  .story-block .stats-strip .value { font-weight: 700; font-size: 14px; }
+
+  .copy-btn { position: absolute; top: 16px; right: 16px; background: var(--ink); color: var(--paper); border: none; padding: 6px 12px; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .copy-btn:hover { background: var(--accent); }
+  .copy-btn.copied { background: var(--positive); }
+
+  .intro { background: var(--ink); color: var(--paper); padding: 32px 28px; margin-bottom: 32px; }
+  .intro h3 { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+  .intro p { font-size: 15px; line-height: 1.5; margin-bottom: 8px; max-width: 720px; }
+
+  footer { max-width: 1400px; margin: 0 auto; padding: 28px 5vw; border-top: 3px double var(--ink); font-size: 12px; color: var(--ink-soft); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-top">
+    <span>MARLBORO MEN'S SOFTBALL · PODCAST PREP</span>
+    <span id="dateline">LOADING…</span>
+  </div>
+  <h1>Talking<br><span class="accent">Points</span></h1>
+  <p class="tagline">Auto-generated storylines from this week's data. Copy any section and paste into your show notes.</p>
+  <div class="week-badge" id="week-badge">WEEK 0</div>
+</header>
+
+<nav class="nav">
+  <a href="index.html">Rankings</a>
+  <a href="podcast.html" class="active">Podcast Prep</a>
+  <a href="matchups.html">Head-to-Head</a>
+  <a href="projections.html">Playoff Odds</a>
+</nav>
+
+<main class="container">
+  <div class="intro">
+    <h3>How to use this page</h3>
+    <p>Each block below is a self-contained storyline pulled straight from this week's numbers. Hit "Copy" on any block to grab the text for your show notes, and use the stats strip at the bottom for exact numbers to cite on air.</p>
+    <p>Updates every Monday morning and Wednesday evening.</p>
+  </div>
+  <div id="stories"></div>
+</main>
+
+<footer>
+  <span>© 2026 Marlboro Men's Softball League · Podcast prep tool</span>
+  <span>Data: <a href="https://marlborosoftball.com/standings/" target="_blank">marlborosoftball.com</a></span>
+</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  async function loadData() {
+    const res = await fetch('rankings.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to load');
+    return await res.json();
+  }
+
+  function buildStories(data) {
+    const r = data.rankings;
+    const stories = [];
+
+    // Story: The #1 team
+    const top = r[0];
+    stories.push({
+      kicker: 'Top of the Index',
+      headline: `${top.name} sits atop the Power Index at ${top.rating.toFixed(1)}`,
+      dek: `${top.wins}-${top.losses} with a ${top.avg_diff >= 0 ? '+' : ''}${top.avg_diff.toFixed(1)} average run differential.`,
+      body: `Talking points: ${top.name} (captained by ${top.captain}) has outscored opponents by ${Math.abs(top.run_diff)} total runs${top.run_diff > 0 ? '' : ' — but the model still likes them thanks to schedule strength'}. Their strength-of-schedule number sits at ${(top.components.opp_win_pct*100).toFixed(1)}%. If you're picking a favorite this week, the numbers say start here.`,
+      stats: [
+        ['Rating', top.rating.toFixed(1)],
+        ['Record', `${top.wins}-${top.losses}`],
+        ['Run Diff', (top.run_diff > 0 ? '+' : '') + top.run_diff],
+        ['SOS', (top.components.opp_win_pct*100).toFixed(1) + '%'],
+      ],
+    });
+
+    // Story: Biggest week-over-week mover (if we have history)
+    const withMoves = r.filter(x => x.prev_rank != null && x.week_delta !== 0);
+    if (withMoves.length) {
+      const biggestUp   = withMoves.filter(x => x.week_delta > 0).sort((a,b) => b.week_delta - a.week_delta)[0];
+      const biggestDown = withMoves.filter(x => x.week_delta < 0).sort((a,b) => a.week_delta - b.week_delta)[0];
+
+      if (biggestUp && biggestUp.week_delta >= 2) {
+        stories.push({
+          kicker: 'Riser of the Week',
+          headline: `${biggestUp.name} jumps ${biggestUp.week_delta} spots to #${biggestUp.rank}`,
+          dek: `Was #${biggestUp.prev_rank} last week. Something is working.`,
+          body: `${biggestUp.name} (${biggestUp.captain}) is up ${biggestUp.week_delta} spots in one week — the biggest jump on the board. Currently ${biggestUp.wins}-${biggestUp.losses} with ${(biggestUp.avg_diff >= 0 ? '+' : '')}${biggestUp.avg_diff.toFixed(1)} avg run diff. The question for the podcast: what's clicking, and is it real?`,
+          stats: [
+            ['Now', '#' + biggestUp.rank],
+            ['Last Wk', '#' + biggestUp.prev_rank],
+            ['Move', '↑ ' + biggestUp.week_delta],
+            ['Record', `${biggestUp.wins}-${biggestUp.losses}`],
+          ],
+        });
+      }
+      if (biggestDown && Math.abs(biggestDown.week_delta) >= 2) {
+        stories.push({
+          kicker: 'Faller of the Week',
+          headline: `${biggestDown.name} drops ${Math.abs(biggestDown.week_delta)} spots to #${biggestDown.rank}`,
+          dek: `Was #${biggestDown.prev_rank} last week. What went wrong?`,
+          body: `${biggestDown.name} (${biggestDown.captain}) tumbled ${Math.abs(biggestDown.week_delta)} places in seven days. Now ${biggestDown.wins}-${biggestDown.losses}, ${(biggestDown.avg_diff >= 0 ? '+' : '')}${biggestDown.avg_diff.toFixed(1)} avg diff. Time to ask on the pod: injury, slump, or was the previous ranking overstated?`,
+          stats: [
+            ['Now', '#' + biggestDown.rank],
+            ['Last Wk', '#' + biggestDown.prev_rank],
+            ['Move', '↓ ' + Math.abs(biggestDown.week_delta)],
+            ['Record', `${biggestDown.wins}-${biggestDown.losses}`],
+          ],
+        });
+      }
+    }
+
+    // Story: Most underrated (biggest positive rank_delta vs record)
+    const underrated = [...r].sort((a,b) => b.rank_delta - a.rank_delta).filter(x => x.rank_delta > 0)[0];
+    if (underrated && underrated.rank_delta >= 2) {
+      stories.push({
+        kicker: 'Better Than the Record',
+        headline: `${underrated.name} is #${underrated.rank} in the Index — but only #${underrated.record_rank} by record`,
+        dek: `A ${underrated.wins}-${underrated.losses} team the model believes in.`,
+        body: `The pure standings say ${underrated.name} (${underrated.captain}) is the #${underrated.record_rank} team in the league. The Power Index says they're actually #${underrated.rank} — a gap of ${underrated.rank_delta} spots. The reason: their opponents have a combined <strong>${(underrated.components.opp_win_pct*100).toFixed(0)}% win rate</strong>, meaning they've been beating up on strong competition (or losing close to it). Don't sleep on this team in a playoff scenario.`,
+        stats: [
+          ['Power Rank', '#' + underrated.rank],
+          ['Record Rank', '#' + underrated.record_rank],
+          ['Gap', '+' + underrated.rank_delta + ' spots'],
+          ['SOS', (underrated.components.opp_win_pct*100).toFixed(1) + '%'],
+        ],
+      });
+    }
+
+    // Story: Most overrated (biggest negative rank_delta)
+    const overrated = [...r].sort((a,b) => a.rank_delta - b.rank_delta).filter(x => x.rank_delta < 0)[0];
+    if (overrated && Math.abs(overrated.rank_delta) >= 2) {
+      stories.push({
+        kicker: 'Living on Cupcakes',
+        headline: `${overrated.name}'s ${overrated.wins}-${overrated.losses} record hides a soft schedule`,
+        dek: `Record says #${overrated.record_rank}. The model says #${overrated.rank}.`,
+        body: `${overrated.name} (${overrated.captain}) looks good on paper — ${overrated.wins}-${overrated.losses} with ${(overrated.avg_diff >= 0 ? '+' : '')}${overrated.avg_diff.toFixed(1)} avg run diff. But their opponents combine for just <strong>${(overrated.components.opp_win_pct*100).toFixed(0)}%</strong>. The Power Index drops them to <strong>#${overrated.rank}</strong> — ${Math.abs(overrated.rank_delta)} spots below where the standings would slot them. Podcast question: are they built to hang when they face a tougher slate?`,
+        stats: [
+          ['Power Rank', '#' + overrated.rank],
+          ['Record Rank', '#' + overrated.record_rank],
+          ['Gap', overrated.rank_delta + ' spots'],
+          ['SOS', (overrated.components.opp_win_pct*100).toFixed(1) + '%'],
+        ],
+      });
+    }
+
+    // Story: Toughest schedule
+    const bySOS = [...r].sort((a,b) => b.components.opp_win_pct - a.components.opp_win_pct);
+    const toughest = bySOS[0];
+    stories.push({
+      kicker: 'Iron Slate',
+      headline: `${toughest.name} has faced the hardest schedule in the league`,
+      dek: `Opponents winning ${(toughest.components.opp_win_pct*100).toFixed(1)}% of their games.`,
+      body: `${toughest.name} (${toughest.captain}) currently sits at ${toughest.wins}-${toughest.losses}${toughest.rank_delta > 0 ? ' — but the Index rewards them, ranking them #' + toughest.rank + ' vs. #' + toughest.record_rank + ' by pure record' : ''}. Whatever their record says, they've been in the ring with the top of the league every week.`,
+      stats: [
+        ['Rank', '#' + toughest.rank],
+        ['Record', `${toughest.wins}-${toughest.losses}`],
+        ['SOS', (toughest.components.opp_win_pct*100).toFixed(1) + '%'],
+        ['Avg Diff', (toughest.avg_diff >= 0 ? '+' : '') + toughest.avg_diff.toFixed(1)],
+      ],
+    });
+
+    // Story: Softest schedule
+    const softest = bySOS[bySOS.length - 1];
+    stories.push({
+      kicker: 'Easy Money',
+      headline: `${softest.name} has faced the softest schedule so far`,
+      dek: `Opponents winning just ${(softest.components.opp_win_pct*100).toFixed(1)}% of their games.`,
+      body: `${softest.name} (${softest.captain}) is ${softest.wins}-${softest.losses}, but the model dings their SOS at <strong>${(softest.components.opp_win_pct*100).toFixed(1)}%</strong> — the lowest in the league. Whether they can validate their record depends on who's still on their remaining schedule. Fair question for the pod.`,
+      stats: [
+        ['Rank', '#' + softest.rank],
+        ['Record', `${softest.wins}-${softest.losses}`],
+        ['SOS', (softest.components.opp_win_pct*100).toFixed(1) + '%'],
+        ['Avg Diff', (softest.avg_diff >= 0 ? '+' : '') + softest.avg_diff.toFixed(1)],
+      ],
+    });
+
+    // Story: Biggest run differential
+    const byDiff = [...r].sort((a,b) => b.run_diff - a.run_diff);
+    const bomber = byDiff[0];
+    stories.push({
+      kicker: 'The Run Machine',
+      headline: `${bomber.name} leads the league at +${bomber.run_diff}`,
+      dek: `${bomber.wins}-${bomber.losses} with an average game margin of +${bomber.avg_diff.toFixed(1)}.`,
+      body: `${bomber.name} (${bomber.captain}) has piled up <strong>${bomber.runs_for} runs for</strong> against <strong>${bomber.runs_against} against</strong>. That's not just winning — that's dominating when they win. When you watch them play, count the mercy-rule potential.`,
+      stats: [
+        ['Run Diff', '+' + bomber.run_diff],
+        ['Runs For', String(bomber.runs_for)],
+        ['Runs Ag.', String(bomber.runs_against)],
+        ['Avg Diff', '+' + bomber.avg_diff.toFixed(1)],
+      ],
+    });
+
+    // Story: Divisional balance
+    const divs = {};
+    r.forEach(t => {
+      if (!divs[t.division]) divs[t.division] = { teams: [], totalRating: 0 };
+      divs[t.division].teams.push(t);
+      divs[t.division].totalRating += t.rating;
+    });
+    const divRanking = Object.entries(divs).map(([name, d]) => ({
+      name, avg: d.totalRating / d.teams.length, teams: d.teams,
+    })).sort((a,b) => b.avg - a.avg);
+
+    stories.push({
+      kicker: 'Divisional Power',
+      headline: `The ${divRanking[0].name} is the strongest division right now`,
+      dek: `Average Power Index rating: ${divRanking[0].avg.toFixed(1)}.`,
+      body: `Ranked by average Power Index rating across all six teams: <strong>${divRanking[0].name}</strong> (${divRanking[0].avg.toFixed(1)}), then <strong>${divRanking[1].name}</strong> (${divRanking[1].avg.toFixed(1)}), then <strong>${divRanking[2].name}</strong> (${divRanking[2].avg.toFixed(1)}). Something to raise on the pod: does the toughest division get the fairest playoff seeding, or are the middle teams there getting punished by their own strong slate?`,
+      stats: divRanking.map(d => [d.name, d.avg.toFixed(1)]),
+    });
+
+    return stories;
+  }
+
+  function storyHTML(s, idx) {
+    const plainText = `${s.headline}\n\n${s.dek}\n\n${s.body.replace(/<[^>]+>/g, '')}\n\nStats: ${s.stats.map(([l,v]) => `${l} ${v}`).join(' · ')}`;
+    return `
+      <article class="story-block" data-copy="${idx}">
+        <button class="copy-btn" data-copy-idx="${idx}">Copy</button>
+        <div class="kicker">${s.kicker}</div>
+        <h2>${s.headline}</h2>
+        <div class="dek">${s.dek}</div>
+        <div class="body"><p>${s.body}</p></div>
+        <div class="stats-strip">
+          ${s.stats.map(([label, value]) => `
+            <div class="stat-pair"><span class="label">${label}</span><span class="value">${value}</span></div>
+          `).join('')}
+        </div>
+        <textarea data-copy-text style="position:absolute;left:-9999px;">${plainText}</textarea>
+      </article>
+    `;
+  }
+
+  function render(data) {
+    const gen = new Date(data.generated_at);
+    document.getElementById('dateline').textContent =
+      gen.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' }).toUpperCase();
+    document.getElementById('week-badge').textContent =
+      data.week ? `WEEK ${data.week}` : 'PRESEASON';
+
+    const stories = buildStories(data);
+    document.getElementById('stories').innerHTML = stories.map((s, i) => storyHTML(s, i)).join('');
+
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = e.target.getAttribute('data-copy-idx');
+        const block = document.querySelector(`.story-block[data-copy="${idx}"]`);
+        const ta = block.querySelector('[data-copy-text]');
+        ta.select();
+        document.execCommand('copy');
+        e.target.textContent = 'Copied ✓';
+        e.target.classList.add('copied');
+        setTimeout(() => { e.target.textContent = 'Copy'; e.target.classList.remove('copied'); }, 1500);
+      });
+    });
+  }
+
+  loadData().then(render).catch(err => {
+    console.error(err);
+    document.getElementById('stories').innerHTML =
+      '<div style="padding:40px 0;text-align:center;color:var(--ink-soft);">Could not load rankings data.</div>';
+  });
+})();
+</script>
+</body>
+</html>
