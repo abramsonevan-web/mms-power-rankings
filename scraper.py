@@ -180,7 +180,11 @@ def scrape_standings() -> dict:
             if tr is target_header_row:
                 continue
             cells = row_cells(tr)
-            if len(cells) < len(headers):
+            # Site added new columns over time (FIELD SEED, etc.). Accept any row
+            # that has at least enough cells to reach the required data columns.
+            min_cells_needed = max(col[c] for c in ["team #", "team name", "w", "l",
+                                                     "runs for", "runs against"]) + 1
+            if len(cells) < min_cells_needed:
                 continue
             team_id = parse_int(cells[col["team #"]].get_text(strip=True))
             if team_id == 0:
