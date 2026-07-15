@@ -1,61 +1,72 @@
 name: Weekly Power Rankings Update
- 
+
 on:
   schedule:
-    # Every Monday at 9:00 AM Eastern (13:00 UTC) — after Sunday games wrap
+    # Monday 9 AM Eastern (13:00 UTC) — main weekly update after Sunday games
     - cron: '0 13 * * 1'
-  workflow_dispatch:   # Allow manual trigger from the Actions tab
- 
+    # Wednesday 6 PM Eastern (22:00 UTC) — catch late updates for podcast prep
+    - cron: '0 22 * * 3'
+  workflow_dispatch:
+
 jobs:
   update-rankings:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Needed to commit rankings.json back to the repo
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
-          fetch-depth: 0   # Full history so rebase works cleanly
- 
-      - uses: actions/setup-python@v5
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
- 
+
       - name: Install dependencies
         run: pip install requests beautifulsoup4
- 
+
       - name: Scrape site and compute rankings
-        run: python scraper.py --out rankings.json
- 
+        # Scraper will exit with a red X if it gets 0 teams — this is intentional
+        # so we don't overwrite good data with an empty file when the site breaks.
+        run: python scraper.py --out rankings.json --history-dir history
+
       - name: Commit and push updated rankings
         run: |
           git config user.name  "mms-rankings-bot"
           git config user.email "bot@marlborosoftball.com"
- 
-          # Stash the fresh scrape so we can always restore it
+
           cp rankings.json /tmp/fresh-rankings.json
- 
-          # Retry loop: always rebuild from latest origin/main, drop fresh data, push
+          mkdir -p /tmp/fresh-history
+          if [ -d history ]; then
+            cp -r history/. /tmp/fresh-history/ 2>/dev/null || true
+          fi
+
           for i in 1 2 3; do
             git fetch origin main
             git reset --hard origin/main
             cp /tmp/fresh-rankings.json rankings.json
-            git add rankings.json
- 
+            if [ -d /tmp/fresh-history ] && [ "$(ls -A /tmp/fresh-history 2>/dev/null)" ]; then
+              mkdir -p history
+              cp /tmp/fresh-history/*.json history/ 2>/dev/null || true
+            fi
+
+            git add rankings.json history/ 2>/dev/null || git add rankings.json
+
             if git diff --staged --quiet; then
               echo "No changes to commit."
               exit 0
             fi
- 
+
             git commit -m "Weekly rankings update: $(date -u +'%Y-%m-%d')"
- 
+
             if git push; then
               echo "Push succeeded on attempt $i."
               exit 0
             fi
- 
-            echo "Push attempt $i failed (likely race with another commit), retrying in 5s..."
+
+            echo "Push attempt $i failed, retrying in 5s..."
             sleep 5
           done
- 
+
           echo "Failed to push after 3 attempts."
           exit 1
