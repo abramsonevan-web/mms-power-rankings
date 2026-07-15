@@ -1,19 +1,22 @@
 # Netlify configuration for MMS Power Index
-# Drop this file in the root of your repo alongside index.html.
 
 [build]
-  # No build step — this is a static site.
   publish = "."
 
-# Prevent caching of the data file so weekly updates appear immediately.
+# Never cache the data file — updates should appear immediately
 [[headers]]
   for = "/rankings.json"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
 
-# Cache the HTML briefly (5 minutes) so Netlify still serves it fast,
-# but new deploys propagate quickly.
+# Never cache history snapshots either
 [[headers]]
-  for = "/index.html"
+  for = "/history/*"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# Cache HTML briefly so redeploys propagate quickly
+[[headers]]
+  for = "/*.html"
   [headers.values]
     Cache-Control = "public, max-age=300, must-revalidate"
