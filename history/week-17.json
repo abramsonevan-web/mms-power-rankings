@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-27T14:42:22.876039+00:00",
+  "generated_at": "2026-07-27T15:38:25.720659+00:00",
   "source": "live",
   "week": 17,
   "rankings": [
@@ -130,8 +130,8 @@
       "week": 17,
       "record_rank": 6,
       "rank_delta": 1,
-      "prev_rank": 6,
-      "week_delta": 1
+      "prev_rank": 5,
+      "week_delta": 0
     },
     {
       "rank": 6,
@@ -156,8 +156,8 @@
       "week": 17,
       "record_rank": 5,
       "rank_delta": -1,
-      "prev_rank": 5,
-      "week_delta": -1
+      "prev_rank": 6,
+      "week_delta": 0
     },
     {
       "rank": 7,
@@ -182,8 +182,8 @@
       "week": 17,
       "record_rank": 7,
       "rank_delta": 0,
-      "prev_rank": 10,
-      "week_delta": 3
+      "prev_rank": 9,
+      "week_delta": 2
     },
     {
       "rank": 8,
@@ -234,8 +234,8 @@
       "week": 17,
       "record_rank": 8,
       "rank_delta": -1,
-      "prev_rank": 11,
-      "week_delta": 2
+      "prev_rank": 8,
+      "week_delta": -1
     },
     {
       "rank": 10,
@@ -260,8 +260,8 @@
       "week": 17,
       "record_rank": 12,
       "rank_delta": 2,
-      "prev_rank": 12,
-      "week_delta": 2
+      "prev_rank": 13,
+      "week_delta": 3
     },
     {
       "rank": 11,
@@ -286,8 +286,8 @@
       "week": 17,
       "record_rank": 11,
       "rank_delta": 0,
-      "prev_rank": 9,
-      "week_delta": -2
+      "prev_rank": 10,
+      "week_delta": -1
     },
     {
       "rank": 12,
@@ -312,8 +312,8 @@
       "week": 17,
       "record_rank": 9,
       "rank_delta": -3,
-      "prev_rank": 8,
-      "week_delta": -4
+      "prev_rank": 11,
+      "week_delta": -1
     },
     {
       "rank": 13,
@@ -338,8 +338,8 @@
       "week": 17,
       "record_rank": 13,
       "rank_delta": 0,
-      "prev_rank": 13,
-      "week_delta": 0
+      "prev_rank": 12,
+      "week_delta": -1
     },
     {
       "rank": 14,
@@ -416,8 +416,8 @@
       "week": 17,
       "record_rank": 15,
       "rank_delta": -1,
-      "prev_rank": 17,
-      "week_delta": 1
+      "prev_rank": 16,
+      "week_delta": 0
     },
     {
       "rank": 17,
@@ -442,8 +442,8 @@
       "week": 17,
       "record_rank": 17,
       "rank_delta": 0,
-      "prev_rank": 16,
-      "week_delta": -1
+      "prev_rank": 17,
+      "week_delta": 0
     },
     {
       "rank": 18,
