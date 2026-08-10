@@ -87,11 +87,26 @@ class Team:
 
 
 def _fetch(url: str) -> str:
-    r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
-    r.raise_for_status()
-    text = r.text
-    print(f"[debug] Fetched {url}: {len(text)} chars")
-    return text
+    """Fetch with retries — the league site sometimes takes a while to respond."""
+    import time
+    last_error = None
+    for attempt in range(1, 4):  # 3 attempts total
+        try:
+            r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=60)
+            r.raise_for_status()
+            text = r.text
+            print(f"[debug] Fetched {url}: {len(text)} chars (attempt {attempt})")
+            return text
+        except (requests.exceptions.Timeout,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError) as e:
+            last_error = e
+            print(f"[warn] Attempt {attempt} failed: {e}", file=sys.stderr)
+            if attempt < 3:
+                wait = 10 * attempt  # 10s, then 20s
+                print(f"[warn] Retrying in {wait}s...", file=sys.stderr)
+                time.sleep(wait)
+    raise last_error
 
 
 def _parse_int(s: str, default: int = 0) -> int:
