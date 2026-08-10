@@ -87,26 +87,38 @@ class Team:
 
 
 def _fetch(url: str) -> str:
-    """Fetch with retries — the league site sometimes takes a while to respond."""
+    """Fetch with retries and proxy fallback.
+    Some hosts block cloud provider IPs (GitHub Actions). We try direct first,
+    then fall back to public read-through proxies that fetch on our behalf."""
     import time
+    from urllib.parse import quote
+
+    endpoints = [
+        url,  # Direct fetch
+        f"https://r.jina.ai/{url}",  # Jina reader — returns markdown, but preserves link URLs so team_id extraction still works
+        f"https://api.allorigins.win/raw?url={quote(url)}",  # CORS/HTML proxy
+    ]
+
     last_error = None
-    for attempt in range(1, 4):  # 3 attempts total
-        try:
-            r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=60)
-            r.raise_for_status()
-            text = r.text
-            print(f"[debug] Fetched {url}: {len(text)} chars (attempt {attempt})")
-            return text
-        except (requests.exceptions.Timeout,
-                requests.exceptions.ConnectionError,
-                requests.exceptions.HTTPError) as e:
-            last_error = e
-            print(f"[warn] Attempt {attempt} failed: {e}", file=sys.stderr)
-            if attempt < 3:
-                wait = 10 * attempt  # 10s, then 20s
-                print(f"[warn] Retrying in {wait}s...", file=sys.stderr)
-                time.sleep(wait)
-    raise last_error
+    for endpoint in endpoints:
+        for attempt in range(1, 3):
+            try:
+                r = requests.get(endpoint, headers={"User-Agent": USER_AGENT}, timeout=60)
+                r.raise_for_status()
+                text = r.text
+                print(f"[debug] Fetched via {endpoint[:60]}...: {len(text)} chars (attempt {attempt})")
+                if len(text) < 1000:
+                    print(f"[warn] Response too short, trying next endpoint")
+                    break
+                return text
+            except (requests.exceptions.Timeout,
+                    requests.exceptions.ConnectionError,
+                    requests.exceptions.HTTPError) as e:
+                last_error = e
+                print(f"[warn] {endpoint[:60]}... attempt {attempt} failed: {e}", file=sys.stderr)
+                if attempt < 2:
+                    time.sleep(5)
+    raise last_error or Exception("All fetch endpoints failed")
 
 
 def _parse_int(s: str, default: int = 0) -> int:
